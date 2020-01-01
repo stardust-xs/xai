@@ -125,7 +125,6 @@ dmypy.json
 .pyre/
 
 # Ignored on-device directories
-.vscode/
 mle/data/tracker/
 
 # Ignored on-device files
