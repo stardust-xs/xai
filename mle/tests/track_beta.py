@@ -12,19 +12,16 @@ import win32gui
 from mle.vars.dev import BROWSERS
 
 
-def get_browsed_url(active_app: Union[None, str]) -> Union[None, str]:
-    """Get browsed url from the browser instance."""
+def get_browsed_url() -> Union[None, str]:
+    """Get browsed url from the browser instance.
+    
+    Use: url = get_browsed_url() if active_app in BROWSERS else None
+    """
     try:
-        if active_app in BROWSERS:
-            browser = win32gui.GetForegroundWindow()
-            browser_control = uiautomation.ControlFromHandle(browser)
-            edit_control = browser_control.EditControl()
-            if edit_control.GetValuePattern().Value:
-                return 'https://' + edit_control.GetValuePattern().Value
-            else:
-                return None
-        else:
-            return None
+        browser = uiautomation.ControlFromHandle(win32gui.GetForegroundWindow())
+        link = browser.EditControl().GetValuePattern().Value
+        url = 'https://' + link if link else None
+        return url
     except Exception:
         return None
 
