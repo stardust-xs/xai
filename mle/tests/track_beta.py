@@ -2,7 +2,6 @@
 # pylint: disable=import-error
 # pylint: disable=no-name-in-module
 
-import time
 from ctypes import Structure, byref, c_uint, cdll, sizeof
 from typing import Union
 
