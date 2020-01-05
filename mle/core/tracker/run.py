@@ -69,12 +69,13 @@ try:
                 and datetime.now().strftime(DAY_LIMIT_FORMAT) != DAY_LIMIT):
                 end_time = datetime.now().replace(microsecond=0)
                 total_time = end_time - start_time
+                spent_secs = total_time.total_seconds()
                 usage = split_time_spent(total_time)
 
                 if usage != (0, 0, 0, 0):
                     update_data(file, previous_window, previous_app,
-                                previous_exe, previous_user, start_time, end_time, usage[0], usage[1], usage[2],
-                                usage[3])
+                                previous_exe, previous_user, start_time, end_time, spent_secs, usage[0], usage[1],
+                                usage[2], usage[3])
                     start_time = datetime.now().replace(microsecond=0)
 
             previous_window = active_window
