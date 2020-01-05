@@ -33,7 +33,7 @@ from typing import Any
 from mle.vars.dev import DEF_CHARSET
 
 headers = ['activity', 'app', 'executable', 'user', 'started',
-           'stopped', 'days', 'hours', 'mins', 'secs']
+           'stopped', 'spent', 'days', 'hours', 'mins', 'secs']
 
 
 def update_data(file: str, *args: Any) -> None:
