@@ -11,11 +11,15 @@ M.L.E (Emily) is aiming for being a Natural Language Assistant.</a><br>Built by 
 
 <p align="center">
     <!-- Python version -->
-    <a href="https://www.python.org/downloads/release/python-375/"><img src="https://img.shields.io/pypi/pyversions/mle?color=blue&logo=python&logoColor=white" alt="Python version"/></a>
+    <a href="https://www.python.org/downloads/release/python-375/"><img src="https://img.shields.io/static/v1?label=python&message=3.6%2B&color=blue&logo=python&logoColor=white" alt="Python version"/></a>
     <!-- Open issues -->
     <a href="https://github.com/xames3/mle/issues"><img src="https://img.shields.io/github/issues/xames3/mle?logo=github" alt="Open issues"/></a>
     <!-- Last commit -->
-    <a href="https://github.com/xames3/mle/commits/master"><img src="https://img.shields.io/github/last-commit/xames3/mle?logo=github" alt="Last commit"/></a>    
+    <a href="https://github.com/xames3/mle/commits/master"><img src="https://img.shields.io/github/last-commit/xames3/mle?logo=github" alt="Last commit"/></a>
+    <!-- Commit Activity -->
+    <a href="https://github.com/xames3/mle/commits/master"><img src="https://img.shields.io/github/commit-activity/m/xames3/mle?logo=github" alt="Commit activity"/></a>
+    <!-- Contributors -->
+    <a href="https://github.com/xames3/mle/graphs/contributors"><img src="https://img.shields.io/github/contributors/xames3/mle?logo=myspace&logoColor=white" alt="Contributors"/></a>    
     <!-- License -->
     <a href="https://github.com/xames3/mle/blob/master/LICENSE"><img src="https://img.shields.io/github/license/xames3/mle?logo=apache" alt="License"/></a>
 </p>
