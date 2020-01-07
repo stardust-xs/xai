@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # ======================================================================
-"""The `mle.vars.setup` module.
+"""The ``mle.vars.dev`` module.
 
 This module manages variables for the project development.
 
@@ -23,7 +23,7 @@ environment, which can affect and/or update all the depending values at
 once. These values should be checked and updated periodically.
 
 """
-# Local time zone details.
+# Local time zone details
 # You can find all the choices here:
 # https://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 TIME_ZONE = 'Asia/Kolkata'
@@ -45,5 +45,13 @@ DAY_LIMIT = '23:59:59'
 # Tracker day limit format
 DAY_LIMIT_FORMAT = '%H:%M:%S'
 
-# Tracker csv named format
-TRACKER_CSV_TS_FORMAT = '%d_%m_%y'
+# Csv named format
+CSV_TS_FORMAT = '%d_%m_%y'
+
+# Default urls
+# This url is used for checking if the internet connection exists.
+# Any valid url will work.
+PING_URL = 'https://www.google.com/'
+
+# Using ``DarkSky.net`` for making weather related API calls.
+WEATHER_URL = 'https://api.darksky.net/forecast/'
