@@ -14,27 +14,37 @@
 # limitations under the License.
 #
 # ======================================================================
-"""The `mle.utils.common` module.
+"""The ``mle.utils.common`` module.
 
 This module implements the common functions that are very generic in
 their operation and can-be/are used within the project. These functions
 also provide cross project usage i.e the functions from this module can
 be used by other python projects.
+
+Todo:
+    * Remove ``pylint`` warning comments.
+
 """
 # The following comment should be removed at some point in the future.
 # pylint: disable=import-error
 # pylint: disable=no-name-in-module
 
 import os
-from typing import List, Optional
+from typing import List, Optional, Union
+
+import requests
+from fuzzywuzzy.fuzz import partial_ratio
+from fuzzywuzzy.process import extract
+
+from mle.vars.dev import PING_URL
 
 mle_path = os.path.dirname(os.path.dirname(__file__))
 
 
 def find_string(string: str,
-                string_list: List,
+                str_list: List,
                 min_score: Optional[int] = 70) -> Optional[str]:
-    """Finds string in a list.
+    """Find string in a list using fuzzy logic.
 
     Finds the matching string in the list. It works similar to
     ``.find()`` method but uses fuzzy logic for guessing text from any
@@ -42,21 +52,18 @@ def find_string(string: str,
 
     Args:
         string: Approximate or Exact string to find in the list.
-        string_list: List in which the string needs to be searched in.
+        str_list: List in which the string needs to be searched in.
         min_score: Minimum score needed to make an approximate guess.
                    Default: 70
 
     Returns:
-        ``str`` value to be searched in the list.
+        String value to be searched in the list.
 
     Raises:
         ValueError: If no similar string is found in the list.
     """
-    from fuzzywuzzy.fuzz import partial_ratio
-    from fuzzywuzzy.process import extract
-
     # This will give us list of 3 best matches for our search query.
-    guessed = extract(string, string_list, limit=3, scorer=partial_ratio)
+    guessed = extract(string, str_list, limit=3, scorer=partial_ratio)
 
     for best_guess in guessed:
         current_score = partial_ratio(string, best_guess)
@@ -64,3 +71,14 @@ def find_string(string: str,
             return best_guess[0]
         else:
             raise ValueError(f'Couldn\'t find "{string}" in the given list.')
+
+
+def check_internet(timeout: Optional[Union[float, int]] = 10.0) -> bool:
+    """Check the internet connectivity."""
+    # You can find the reference code here:
+    # https://gist.github.com/yasinkuyu/aa505c1f4bbb4016281d7167b8fa2fc2
+    try:
+        _ = requests.get(PING_URL, timeout=timeout)
+        return True
+    except ConnectionError:
+        return False
