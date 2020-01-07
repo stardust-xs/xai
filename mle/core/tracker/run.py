@@ -40,12 +40,12 @@ from win10toast import ToastNotifier
 from mle.core.tracker.track import get_active_window, split_time_spent
 from mle.core.tracker.write import update_data
 from mle.utils.common import mle_path
-from mle.vars.dev import DAY_LIMIT, DAY_LIMIT_FORMAT, TRACKER_CSV_TS_FORMAT
+from mle.vars.dev import DAY_LIMIT, DAY_LIMIT_FORMAT, CSV_TS_FORMAT
 
 toast = ToastNotifier()
 
 try:
-    toast.show_toast(title="MLE Activity Tracker",
+    toast.show_toast(title='MLE Activity Tracker',
                      msg='Tracker service started.')
 
     previous_window = previous_app = previous_exe = previous_user = ''
@@ -53,7 +53,7 @@ try:
     start_time = datetime.now().replace(microsecond=0)
 
     data_path = os.path.join(mle_path, 'data\\tracker')
-    csv = ''.join([datetime.now().strftime(TRACKER_CSV_TS_FORMAT), '.csv'])
+    csv = ''.join([datetime.now().strftime(CSV_TS_FORMAT), '.csv'])
     file = os.path.join(data_path, csv)
 
     while True:
@@ -61,7 +61,7 @@ try:
 
         if datetime.now().strftime(DAY_LIMIT_FORMAT) >= DAY_LIMIT:
             new_date = datetime.now() + timedelta(days=1)
-            csv = ''.join([new_date.strftime(TRACKER_CSV_TS_FORMAT), '.csv'])
+            csv = ''.join([new_date.strftime(CSV_TS_FORMAT), '.csv'])
             file = os.path.join(data_path, csv)
 
         if active_window and active_window != 'Task Switching':
