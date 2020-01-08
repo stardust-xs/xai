@@ -51,7 +51,8 @@ CSV_TS_FORMAT = '%d_%m_%y'
 # Default urls
 # This url is used for checking if the internet connection exists.
 # Any valid url will work.
-PING_URL = 'https://www.google.com/'
+PING_URL = 'www.google.com'
+PING_PORT = 80
 
 # Using ``DarkSky.net`` for making weather related API calls.
 WEATHER_URL = 'https://api.darksky.net/forecast/'
