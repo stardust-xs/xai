@@ -126,6 +126,7 @@ dmypy.json
 
 # Ignored on-device directories
 mle/data/tracker/
+mle/data/weather/
 
 # Ignored on-device files
 misc/publishing_steps.txt
