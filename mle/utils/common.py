@@ -30,13 +30,13 @@ Todo:
 # pylint: disable=no-name-in-module
 
 import os
+import socket
 from typing import List, Optional, Union
 
-import requests
 from fuzzywuzzy.fuzz import partial_ratio
 from fuzzywuzzy.process import extract
 
-from mle.vars.dev import PING_URL
+from mle.vars.dev import PING_PORT, PING_URL
 
 mle_path = os.path.dirname(os.path.dirname(__file__))
 
@@ -78,7 +78,9 @@ def check_internet(timeout: Optional[Union[float, int]] = 10.0) -> bool:
     # You can find the reference code here:
     # https://gist.github.com/yasinkuyu/aa505c1f4bbb4016281d7167b8fa2fc2
     try:
-        _ = requests.get(PING_URL, timeout=timeout)
+        socket.create_connection((PING_URL, PING_PORT), timeout=timeout)
         return True
-    except ConnectionError:
-        return False
+    except OSError:
+        pass
+    return False
+
