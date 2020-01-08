@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # ======================================================================
-"""The ``mle.vars.dev`` module.
+"""The `mle.vars.dev` module.
 
 This module manages variables for the project development.
 
@@ -23,6 +23,21 @@ environment, which can affect and/or update all the depending values at
 once. These values should be checked and updated periodically.
 
 """
+# Settings for the project
+AI_NAME = 'M.L.E'
+PROJECT_NAME = 'mle'
+PROJECT_LINK = 'https://github.com/xames3/mle/'
+PROJECT_LICENSE = 'Apache 2.0'
+
+# This project adheres to Semantic Versioning Specification (SemVer)
+# starting with version 0.0.1.
+# You can read about it here: https://semver.org/spec/v2.0.0.html
+PROJECT_VERSION = '0.0.1'
+
+# Author details.
+AUTHOR = 'XAMES3'
+AUTHOR_EMAIL = 'xames3.developer@gmail.com'
+
 # Local time zone details
 # You can find all the choices here:
 # https://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -35,9 +50,6 @@ LANG_CODE = 'en-gb'
 
 # Default encoding used for all read-write objects.
 DEF_CHARSET = 'utf-8'
-
-# Supported browsers
-BROWSERS = ['Firefox', 'Google Chrome', 'Internet Explorer', 'Microsoft Edge']
 
 # Tracker limit for a day
 DAY_LIMIT = '23:59:59'
