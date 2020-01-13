@@ -74,7 +74,7 @@ setup(
     'Topic :: System :: Monitoring',
     'Topic :: System :: Networking :: Monitoring :: Hardware Watchdog',
     'Topic :: System :: Networking :: Time Synchronization',
-		],
+    ],
   license=dev.PROJECT_LICENSE,
   description=__doc__,
   long_description=use_readme(),
@@ -85,4 +85,4 @@ setup(
   python_requires='~=3.6',
   include_package_data=True,
   packages=find_packages(),
-  )
+)
