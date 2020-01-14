@@ -42,6 +42,9 @@
     "python.jediEnabled": true,
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [
+        "--generate-members"
+    ],
     "python.pythonPath": "venv\\Scripts\\python.exe",
     "telemetry.enableTelemetry": false,
     "terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",
@@ -60,9 +63,8 @@
         "editor.quickSuggestions": false,
     },
     "[python]": {
-        "editor.defaultFormatter": "ms-python.python",
         "editor.detectIndentation": false,
-        "editor.insertSpaces": false,
+        "editor.insertSpaces": true,
         "editor.rulers": [
             72,
             80
