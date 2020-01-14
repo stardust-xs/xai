@@ -14,73 +14,60 @@
 # limitations under the License.
 #
 # ======================================================================
-"""The ``mle.utils.common`` module.
-
-This module implements the common functions that are very generic in
-their operation and can-be/are used within the project. These functions
-also provide cross project usage i.e the functions from this module can
-be used by other python projects.
-
-Todo:
-    * Remove ``pylint`` warning comments.
-
-"""
-# The following comment should be removed at some point in the future.
-# pylint: disable=import-error
-# pylint: disable=no-name-in-module
+"""Utility for performing common functions."""
 
 import os
 import socket
+from datetime import datetime
 from typing import List, Optional, Union
 
-from fuzzywuzzy.fuzz import partial_ratio
-from fuzzywuzzy.process import extract
+from fuzzywuzzy import fuzz, process
 
-from mle.vars.dev import PING_PORT, PING_URL
+from mle.vars import dev
 
 mle_path = os.path.dirname(os.path.dirname(__file__))
 
 
 def find_string(string: str,
-                str_list: List,
+                search: List,
                 min_score: Optional[int] = 70) -> Optional[str]:
-    """Find string in a list using fuzzy logic.
+  """Find string in the list using fuzzy logic.
 
-    Finds the matching string in the list. It works similar to
-    ``.find()`` method but uses fuzzy logic for guessing text from any
-    valid list.
+  Find the matching string from the list. It works similar to `find`
+  method but uses fuzzy logic for evaluating and guessing the correct
+  word.
 
-    Args:
-        string: Approximate or Exact string to find in the list.
-        str_list: List in which the string needs to be searched in.
-        min_score: Minimum score needed to make an approximate guess.
-                   Default: 70
+  Args:
+    string: Approximate or exact string to find in the list.
+    search: List in which the string needs to be searched in.
+    min_score: Minimum score (default: 70) to make an approximate guess.
 
-    Returns:
-        String value to be searched in the list.
+  Returns:
+    Best guesses string from the list.
 
-    Raises:
-        ValueError: If no similar string is found in the list.
-    """
-    # This will give us list of 3 best matches for our search query.
-    guessed = extract(string, str_list, limit=3, scorer=partial_ratio)
+  Raises:
+    ValueError: If no matching string is found in the `search` list.
+  """
+  # This will give a list of 3 best matches for our search query. The
+  # number of best matches can be varied by altering the value of
+  # `limit` parameter.
+  guessed = process.extract(string, search, limit=3, scorer=fuzz.partial_ratio)
 
-    for best_guess in guessed:
-        current_score = partial_ratio(string, best_guess)
-        if current_score > min_score and current_score > 0:
-            return best_guess[0]
-        else:
-            raise ValueError(f'Couldn\'t find "{string}" in the given list.')
+  for best_guess in guessed:
+    current_score = fuzz.partial_ratio(string, best_guess)
+    if current_score > min_score and current_score > 0:
+      return best_guess[0]
+    else:
+      raise ValueError(f'Couldn\'t find "{string}" in the given list.')
 
 
 def check_internet(timeout: Optional[Union[float, int]] = 10.0) -> bool:
-    """Check the internet connectivity."""
-    # You can find the reference code here:
-    # https://gist.github.com/yasinkuyu/aa505c1f4bbb4016281d7167b8fa2fc2
-    try:
-        socket.create_connection((PING_URL, PING_PORT), timeout=timeout)
-        return True
-    except OSError:
-        pass
-    return False
-
+  """Check the internet connectivity."""
+  # You can find the reference code here:
+  # https://gist.github.com/yasinkuyu/aa505c1f4bbb4016281d7167b8fa2fc2
+  try:
+    socket.create_connection((dev.PING_URL, dev.PING_PORT), timeout=timeout)
+    return True
+  except OSError:
+    pass
+  return False
