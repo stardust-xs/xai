@@ -53,7 +53,7 @@ def get_active_window() -> Union[Tuple[None, None, None, None], Tuple]:
   active = win32gui.GetForegroundWindow()
   handle = win32gui.GetWindowText(active)
   pid = win32process.GetWindowThreadProcessId(active)[-1]
-  
+
   if psutil.pid_exists(pid):
     name = get_application_name(pid)
     exe = get_process_name(pid)
