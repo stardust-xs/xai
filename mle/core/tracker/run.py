@@ -44,7 +44,7 @@ from mle.vars import dev
 
 toast = ToastNotifier()
 header = ['activity', 'app', 'executable', 'user', 'started',
-          'stopped', 'spent', 'days', 'hours', 'mins', 'secs']
+					'stopped', 'spent', 'days', 'hours', 'mins', 'secs']
 previous_window = previous_app = previous_exe = previous_user = ''
 data_path = os.path.join(mle_path, 'data\\tracker')
 csv = ''.join([datetime.now().strftime(dev.CSV_TS_FORMAT), '.csv'])
@@ -65,14 +65,14 @@ try:
 		# Skip Task Switching application.
 		if active_window and active_window != 'Task Switching':
 			if (previous_window != active_window
-					and datetime.now().strftime(dev.DAY_LIMIT_FORMAT) != dev.DAY_LIMIT):
+				and datetime.now().strftime(dev.DAY_LIMIT_FORMAT) != dev.DAY_LIMIT):
 				end_time = datetime.now().replace(microsecond=0)
 				total_time = end_time - start_time
 				spent_secs = total_time.total_seconds()
 				usage = split_time_spent(total_time)
 				# Only track applications which are used for more than 1 second.
 				if usage != (0, 0, 0, 0):
-					update_data(file, header, previous_window, previous_app, 
+					update_data(file, header, previous_window, previous_app,
 											previous_exe, previous_user, start_time, end_time,
 											spent_secs, usage[0], usage[1], usage[2], usage[3])
 					start_time = datetime.now().replace(microsecond=0)
@@ -80,7 +80,7 @@ try:
 			previous_app = active_app
 			previous_exe = active_exe
 			previous_user = active_user
-		# Check if the application is changed after 1 second.
+		#  Check if the application is changed after 1 second.
 		time.sleep(1)
 except Exception:
 	toast.show_toast(title='MLE Activity Tracker - Error notification',
