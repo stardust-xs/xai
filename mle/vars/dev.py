@@ -14,15 +14,8 @@
 # limitations under the License.
 #
 # ======================================================================
-"""The `mle.vars.dev` module.
+"""Module to define variables for development."""
 
-This module manages variables for the project development.
-
-These are pre-defined values to build a composite development
-environment, which can affect and/or update all the depending values at
-once. These values should be checked and updated periodically.
-
-"""
 # Settings for the project
 AI_NAME = 'M.L.E'
 PROJECT_NAME = 'mle'
@@ -57,14 +50,16 @@ DAY_LIMIT = '23:59:59'
 # Tracker day limit format
 DAY_LIMIT_FORMAT = '%H:%M:%S'
 
-# Csv named format
+# Csv filename format
 CSV_TS_FORMAT = '%d_%m_%y'
 
 # Default urls
 # This url is used for checking if the internet connection exists.
-# Any valid url will work.
 PING_URL = 'www.google.com'
 PING_PORT = 80
 
-# Using ``DarkSky.net`` for making weather related API calls.
+# Use `DarkSky.net` for making weather related API calls.
 WEATHER_URL = 'https://api.darksky.net/forecast/'
+
+# OpenCV cascades path
+CASCADES = 'venv/Lib/site-packages/cv2/data/'
