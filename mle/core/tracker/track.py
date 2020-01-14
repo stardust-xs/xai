@@ -14,22 +14,10 @@
 # limitations under the License.
 #
 # ======================================================================
-"""The ``mle.core.tracker.track`` module.
-
-This module tracks the user activities based on the current screen being
-used. Also, this module packs the necessary functions which provide more
-details about the active/current screen.
-
-Todo:
-    * Remove ``pylint`` warning comments.
-
-"""
-# The following comment should be removed at some point in the future.
-# pylint: disable=import-error
-# pylint: disable=no-name-in-module
+"""Core utility for tracking application usage of the user."""
 
 from datetime import timedelta
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 import psutil
 import win32gui
@@ -37,70 +25,69 @@ import win32process
 from win32api import GetFileVersionInfo
 
 
-def split_time_spent(total_time: timedelta) -> Tuple[int, int, int, int]:
-    """Split time spent on each application."""
-    days, secs = total_time.days, total_time.seconds
-    hours = days * 24 + secs // 3600
-    mins = (secs % 3600) // 60
-    secs = secs % 60
+def split_time_spent(total_time: timedelta) -> Tuple:
+  """Split time spent on each application."""
+  days, secs = total_time.days, total_time.seconds
+  hours = days * 24 + secs // 3600
+  mins = (secs % 3600) // 60
+  secs = secs % 60
+  return days, hours, mins, secs
 
-    return days, hours, mins, secs
 
-
-def get_name_from_exe(path: str) -> Union[None, str]:
-    """Get application name using resource tables."""
-    # You can find the reference code here:
-    # https://stackoverflow.com/a/31119785
-    try:
-        lang, page = GetFileVersionInfo(path, '\\VarFileInfo\\Translation')[0]
-        name = u'\\StringFileInfo\\%04X%04X\\FileDescription' % (lang, page)
-        return GetFileVersionInfo(path, name)
-    except Exception:
-        return None
+def get_name_from_exe(path: str) -> Optional[str]:
+  """Get application name from resource tables."""
+  # You can find the reference code here:
+  # https://stackoverflow.com/a/31119785
+  try:
+    lang, codepage = GetFileVersionInfo(path, '\\VarFileInfo\\Translation')[0]
+    name = u'\\StringFileInfo\\%04X%04X\\FileDescription' % (lang, codepage)
+    return GetFileVersionInfo(path, name)
+  except Exception:
+    return None
 
 
 def get_active_window() -> Union[Tuple[None, None, None, None], Tuple]:
-    """Get the active working window and return it's details."""
-    # You can find the reference code here:
-    # https://stackoverflow.com/a/47936739
-    active = win32gui.GetForegroundWindow()
-    handle = win32gui.GetWindowText(active)
-    pid = win32process.GetWindowThreadProcessId(active)[-1]
-
-    if psutil.pid_exists(pid):
-        name = get_application_name(pid)
-        exe = get_process_name(pid)
-        user = get_username(pid)
-        return handle, name, exe, user
-    else:
-        return None, None, None, None
-
-
-def get_application_name(pid: int) -> Union[None, str]:
-    """Get application name from it's pid."""
-    # You can read the description here:
-    # https://psutil.readthedocs.io/en/latest/#psutil.Process.exe
-    try:
-        return get_name_from_exe(psutil.Process(pid).exe())
-    except Exception:
-        return None
+  """Get the active working window and return details."""
+  # You can find the reference code here:
+  # https://stackoverflow.com/a/47936739
+  active = win32gui.GetForegroundWindow()
+  handle = win32gui.GetWindowText(active)
+  pid = win32process.GetWindowThreadProcessId(active)[-1]
+  
+  if psutil.pid_exists(pid):
+    name = get_application_name(pid)
+    exe = get_process_name(pid)
+    user = get_username(pid)
+    return handle, name, exe, user
+  else:
+    return None, None, None, None
 
 
-def get_process_name(pid: int) -> Union[None, str]:
-    """Get process name from it's pid."""
-    # You can read the description here:
-    # https://psutil.readthedocs.io/en/latest/#psutil.Process.name
-    try:
-        return psutil.Process(pid).name()
-    except Exception:
-        return None
+def get_application_name(pid: int) -> Optional[str]:
+  """Get application name from PID."""
+  # You can read the description here:
+  # https://psutil.readthedocs.io/en/latest/#psutil.Process.exe
+  try:
+    return get_name_from_exe(psutil.Process(pid).exe())
+  except Exception:
+    return None
 
 
-def get_username(pid: int) -> Union[None, str]:
-    """Get name of the user who owns the process from it's pid."""
-    # You can read the description here:
-    # https://psutil.readthedocs.io/en/latest/#psutil.Process.username
-    try:
-        return psutil.Process(pid).username()
-    except Exception:
-        return None
+def get_process_name(pid: int) -> Optional[str]:
+  """Get process name from PID."""
+  # You can read the description here:
+  # https://psutil.readthedocs.io/en/latest/#psutil.Process.name
+  try:
+    return psutil.Process(pid).name()
+  except Exception:
+    return None
+
+
+def get_username(pid: int) -> Optional[str]:
+  """Get name of the user who owns the process from PID."""
+  # You can read the description here:
+  # https://psutil.readthedocs.io/en/latest/#psutil.Process.username
+  try:
+    return psutil.Process(pid).username()
+  except Exception:
+    return None
