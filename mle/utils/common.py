@@ -22,6 +22,7 @@ from datetime import datetime
 from typing import List, Optional, Union
 
 from fuzzywuzzy import fuzz, process
+from win10toast import ToastNotifier
 
 from mle.vars import dev
 
@@ -71,3 +72,16 @@ def check_internet(timeout: Optional[Union[float, int]] = 10.0) -> bool:
   except OSError:
     pass
   return False
+
+
+def toast(name: str, message: str, timeout: Optional[int] = 15) -> None:
+  """Display toast message."""
+  # You can find the example code here:
+  # https://github.com/jithurjacob/Windows-10-Toast-Notifications#example
+  notifier = ToastNotifier()
+  notifier.show_toast(title=name, msg=message, duration=timeout, threaded=True)
+
+
+def now() -> datetime:
+  """Return current time without microseconds."""
+  return datetime.now().replace(microsecond=0)
