@@ -35,54 +35,49 @@ import os
 import time
 from datetime import datetime, timedelta
 
-from win10toast import ToastNotifier
-
 from mle.core.tracker.track import get_active_window, split_time_spent
-from mle.utils.common import mle_path
+from mle.utils.common import mle_path, now, toast
 from mle.utils.write import update_data
 from mle.vars import dev
 
-toast = ToastNotifier()
 header = ['activity', 'app', 'executable', 'user', 'started',
           'stopped', 'spent', 'days', 'hours', 'mins', 'secs']
 previous_window = previous_app = previous_exe = previous_user = ''
 data_path = os.path.join(mle_path, 'data\\tracker')
-csv = ''.join([datetime.now().strftime(dev.CSV_TS_FORMAT), '.csv'])
-file = os.path.join(data_path, csv)
-
-try:
-  toast.show_toast(title='MLE Activity Tracker', msg='Tracker service started.')
-  start_time = datetime.now().replace(microsecond=0)
-  # Keep the service running.
-  while True:
-    active_window, active_app, active_exe, active_user = get_active_window()
-    # If the current time exceeds beyond the DAY_LIMIT save new records
-    # to new file.
-    if datetime.now().strftime(dev.DAY_LIMIT_FORMAT) >= dev.DAY_LIMIT:
-      new_date = datetime.now() + timedelta(days=1)
-      csv = ''.join([new_date.strftime(dev.CSV_TS_FORMAT), '.csv'])
-      file = os.path.join(data_path, csv)
-    # Skip Task Switching application.
-    if active_window and active_window != 'Task Switching':
-      if (previous_window != active_window
-        and datetime.now().strftime(dev.DAY_LIMIT_FORMAT) != dev.DAY_LIMIT):
-        end_time = datetime.now().replace(microsecond=0)
-        total_time = end_time - start_time
-        spent_secs = total_time.total_seconds()
-        usage = split_time_spent(total_time)
-        # Only track applications which are used for more than 1 second.
-        if usage != (0, 0, 0, 0):
+toast('MLE Activity Tracker', 'Activity tracking service started.')
+start_time = now()
+# Keep the service running.
+while True:
+  active_window, active_app, active_exe, active_user = get_active_window()
+  # If current time exceeds beyond DAY_LIMIT, save records to new file.
+  if datetime.now().strftime(dev.DAY_LIMIT_FORMAT) >= dev.DAY_LIMIT:
+    timestamp = datetime.now() + timedelta(days=1)
+  else:
+    timestamp = datetime.now()
+  csv = ''.join([timestamp.strftime(dev.CSV_TS_FORMAT), '.csv'])
+  file = os.path.join(data_path, csv)
+  # Skip Task Switching application.
+  if active_window and active_window != 'Task Switching':
+    if (previous_window != active_window
+      and datetime.now().strftime(dev.DAY_LIMIT_FORMAT) != dev.DAY_LIMIT):
+      end_time = now()
+      total_time = end_time - start_time
+      spent_secs = total_time.total_seconds()
+      usage = split_time_spent(total_time)
+      # Only track applications which are used for more than 1 second.
+      if usage != (0, 0, 0, 0):
+        try:
           update_data(file, header, previous_window, previous_app,
                       previous_exe, previous_user, start_time, end_time,
                       spent_secs, usage[0], usage[1], usage[2], usage[3])
-          start_time = datetime.now().replace(microsecond=0)
-      previous_window = active_window
-      previous_app = active_app
-      previous_exe = active_exe
-      previous_user = active_user
-    # Check if the application is changed after 1 second.
-    time.sleep(1)
-except Exception:
-  toast.show_toast(title='MLE Activity Tracker - Error notification',
-                   msg='Tracker service failure.')
-  raise Exception('Tracker service failure.')
+        except PermissionError:
+          toast('MLE Activity Tracker - Error Notification',
+                'File accessed by another application.')
+        finally:
+          start_time = now()
+    previous_window = active_window
+    previous_app = active_app
+    previous_exe = active_exe
+    previous_user = active_user
+  # Check if the application is changed after 1 second.
+  time.sleep(1)
