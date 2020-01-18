@@ -18,9 +18,17 @@
 
 from typing import Optional, Tuple, Union
 
+import geopy
 import requests
 
 from mle.vars import dev
+
+
+def get_coordinates(address: str) -> Tuple:
+  """Get co-ordinates for particular location or address."""
+  geolocator = geopy.geocoders.Nominatim(user_agent='MLE')
+  location = geolocator.geocode(address)
+  return location.latitude, location.longitude
 
 
 def wind_direction(degree: Union[float, int]) -> str:
@@ -32,10 +40,17 @@ def wind_direction(degree: Union[float, int]) -> str:
 
 
 def weather(darksky_key: str,
-            address: Optional[str] = None) -> Optional[Tuple]:
-  """Record weather for a particular address.
+            address: str) -> Optional[Tuple]:
+  """Fetch weather for a particular address.
 
-  Record weather for an address by making an API call to `DarkSky.net`.
+  Fetch weather for an address by making an API call to `DarkSky.net`.
+
+  Args:
+    darksky_key: DarkSky API key.
+    address: Address to convert in latitude & longitude.
+
+  Returns:
+    Tuple with various weather related parameters.
 
   Note:
     * This function uses `DarkSky` for retreiving weather details of an
@@ -44,15 +59,10 @@ def weather(darksky_key: str,
       You can create it here: `https://darksky.net/`
     * Only 1000 calls can be made per day on the `free` tier.
 
-  Returns:
-    Tuple with various weather related parameters.
-
   Raises:
     ValueError: If the function is called without a valid API key.
   """
-  # TODO(xames3): Add support for fetching latitude and longitudes.
-  # Using default coordinates for testing.
-  latitude, longitude = 19.1668795, 72.9562182
+  latitude, longitude = get_coordinates(address)
   url = f'{dev.WEATHER_URL}{darksky_key}/{latitude},{longitude}?units=si'
   obj = requests.get(url).json()
   return (obj['latitude'], obj['longitude'], obj['currently']['summary'],
