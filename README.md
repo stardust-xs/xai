@@ -5,8 +5,7 @@
 </p>
 
 <p align="center">
-M.L.E (Emily) is aiming for being a Natural Language Assistant.</a><br>Built by <a href="https://linkedin.com/in/xames3">XA</a> and <a href="https://github.com/xames3/mle/graphs/contributors">
-  contributors</a>.
+M.L.E (Emily), an Artificial Intelligence in the making.</a><br>Built by <a href="https://linkedin.com/in/xames3">XA</a> and <a href="https://github.com/xames3/mle/graphs/contributors">contributors</a>.
 </p>
 
 <p align="center">
