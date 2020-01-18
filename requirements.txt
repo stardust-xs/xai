@@ -1,14 +1,9 @@
-autopep8
 fuzzywuzzy
-geocoder
-geolocation-python
-googlemaps
-hurry.filesize
+geopy
 pandas
 psutil
 python-Levenshtein
 pywin32
 pywinauto
-reverse-geocode
 uiautomation
 win10toast
