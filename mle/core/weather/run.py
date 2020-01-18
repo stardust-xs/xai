@@ -66,7 +66,7 @@ while True:
     next_weather_check_time = start_time + timedelta(minutes=30)
     if check_internet():
       try:
-        obj = weather(os.environ['DARKSKY_KEY'])
+        obj = weather(os.environ['DARKSKY_KEY'], 'Mumbai')
         update_data(file, header, start_time, start_time.year,
                     start_time.month, start_time.day, start_time.hour,
                     start_time.minute, obj[0], obj[1], obj[2],
