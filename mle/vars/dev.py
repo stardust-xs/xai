@@ -25,7 +25,7 @@ PROJECT_LICENSE = 'Apache 2.0'
 # This project adheres to Semantic Versioning Specification (SemVer)
 # starting with version 0.0.1.
 # You can read about it here: https://semver.org/spec/v2.0.0.html
-PROJECT_VERSION = '1.0'
+PROJECT_VERSION = '1.1'
 
 # Author details.
 AUTHOR = 'XAMES3'
@@ -61,5 +61,9 @@ PING_PORT = 80
 # Use `DarkSky.net` for making weather related API calls.
 WEATHER_URL = 'https://api.darksky.net/forecast/'
 
-# OpenCV cascades path
-CASCADES = 'venv/Lib/site-packages/cv2/data/'
+# OpenCV models path
+FACE_PROTOTEXT = 'deploy.prototxt.txt'
+FACE_CAFFEMODEL = 'res10_300x300_ssd_iter_140000.caffemodel'
+
+# Confidences
+DETECTED_FACE_CONFIDENCE = 0.7
