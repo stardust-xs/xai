@@ -127,3 +127,7 @@ dmypy.json
 # Ignored on-device directories
 misc/
 mle/data/monitor/
+
+# Ignored on-device files
+mle/core/detect/models/res10_300x300_ssd_iter_140000.caffemodel
+mle/core/detect/models/deploy.prototxt.txt
