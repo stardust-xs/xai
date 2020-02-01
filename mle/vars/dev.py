@@ -65,5 +65,5 @@ WEATHER_URL = 'https://api.darksky.net/forecast/'
 FACE_PROTOTEXT = 'deploy.prototxt.txt'
 FACE_CAFFEMODEL = 'res10_300x300_ssd_iter_140000.caffemodel'
 
-# Confidences
+# Confidence scores
 DETECTED_FACE_CONFIDENCE = 0.7
