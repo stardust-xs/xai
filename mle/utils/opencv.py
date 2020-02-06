@@ -99,7 +99,7 @@ def detect_face(frame: np.ndarray,
 
   Note:
     This method is only applicable to the faces detected by CaffeModel.
-    For faces detected by Haar cascade, use 'detected_motion()'.
+    For faces detected by Haar cascade, use 'detect_motion()'.
   """
   return cv2.rectangle(frame, face_tlxy, face_brxy, color, thickness)
 
