@@ -69,8 +69,9 @@ def detect_faces(frame: np.ndarray,
     coords = detected_faces[0, 0, idx, 3:7] * np.array([width, height,
                                                         width, height])
     detected_confidence = detected_faces[0, 0, idx, 2]
-    # Draw a bounding box only if the detected faces have confidence
-    # score above DETECTED_FACE_CONFIDENCE threshold.
-    if detected_confidence > confidence:
-      x0, y0, x1, y1 = coords.astype('int')
-      draw_box_with_tuple(frame, (x0, y0), (x1, y1))
+    # If the detected faces have confidence score less than
+    # DETECTED_FACE_CONFIDENCE threshold, skip it.
+    if detected_confidence < confidence:
+      continue
+    x0, y0, x1, y1 = coords.astype('int')
+    draw_box_with_tuple(frame, (x0, y0), (x1, y1))
