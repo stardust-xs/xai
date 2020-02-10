@@ -16,10 +16,13 @@
 # ======================================================================
 """Utility for performing common functions."""
 
+import cProfile
+import io
 import os
+import pstats
 import socket
 from datetime import datetime
-from typing import List, Optional, Union
+from typing import Callable, List, Optional, Union
 
 from fuzzywuzzy import fuzz, process
 from win10toast import ToastNotifier
@@ -85,3 +88,20 @@ def toast(name: str, message: str, timeout: Optional[int] = 15) -> None:
 def now() -> datetime:
   """Return current time without microseconds."""
   return datetime.now().replace(microsecond=0)
+
+
+def profile(function: Callable) -> Callable:
+  """Decorator that uses cProfile to profile a function."""
+
+  def inner(*args, **kwargs):
+    _profile = cProfile.Profile()
+    _profile.enable()
+    retval = function(*args, **kwargs)
+    _profile.disable()
+    string = io.StringIO()
+    ps = pstats.Stats(_profile, stream=string).sort_stats('cumulative')
+    ps.print_stats()
+    print(string.getvalue())
+    return retval
+
+  return inner
