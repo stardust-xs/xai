@@ -31,54 +31,28 @@ Any/All generated reports are stored in `./mle/data/vzen/` with their
 respective names.
 """
 
-import os
 import time
 
 import cv2
-import numpy as np
 
-from mle.utils.common import mle_path, toast
-from mle.utils.opencv import detect_face, disconnect, rescale
-from mle.vars import dev
-
-# This is the path where inferred models are stored.
-models_path = os.path.join(mle_path, 'core/vzen/models/')
-face_caffe_model = os.path.join(models_path, dev.FACE_CAFFEMODEL)
-face_prototext = os.path.join(models_path, dev.FACE_PROTOTEXT)
-face_net = cv2.dnn.readNetFromCaffe(face_prototext, face_caffe_model)
+from mle.utils.common import vzen_toast
+from mle.core.vzen.subservices.face_detection import detect_faces
+from mle.utils.opencv import disconnect, rescale
 
 while True:
   stream = cv2.VideoCapture(0)
-  time.sleep(3.0)
-  toast('MLE VZen', 'VZen service started.', 3)
+  vzen_toast('MLE VZen', 'VZen service started.')
+  time.sleep(5.0)
   # Keep the service running.
-  try:
-    while stream.isOpened():
-      _, frame = stream.read()
-      frame = rescale(frame, width=400)
-      frame_height, frame_width = frame.shape[:2]
-      face_blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0,
-                                        (300, 300), (104.0, 177.0, 123.0))
-      face_net.setInput(face_blob)
-      detected_face = face_net.forward()
-      for idx in range(detected_face.shape[2]):
-        detected_face_confidence = detected_face[0, 0, idx, 2]
-        if detected_face_confidence < dev.DETECTED_FACE_CONFIDENCE:
-          continue
-        face_coords = detected_face[0, 0, idx, 3:7] * np.array([frame_width,
-                                                                frame_height,
-                                                                frame_width,
-                                                                frame_height])
-        face_tlx, face_tly, face_brx, face_bry = face_coords.astype('int')
-        detect_face(frame, (face_tlx, face_tly), (face_brx, face_bry))
-      # Terminate the application after pressing 'Esc' key.
-      if cv2.waitKey(5) & 0xFF == int(27):
-        disconnect(stream)
-        exit(0)
-      cv2.imshow('MLE VZen - Live feed', frame)
-    else:
-      toast('MLE VZen - Warning Notification', 'VZen broken.', 3)
-      time.sleep(5.0)
-  except cv2.error:
-    disconnect(stream)
-    toast('MLE VZen - Error Notification', 'VZen disconnected.', 3)
+  while stream.isOpened():
+    _, frame = stream.read()
+    frame = rescale(frame, width=350)
+    detect_faces(frame)
+    # Terminate the stream after pressing 'Esc' key.
+    cv2.imshow('MLE VZen', frame)
+    if cv2.waitKey(1) & 0xFF == int(27):
+      disconnect(stream)
+      exit(0)
+  else:
+    vzen_toast('MLE VZen - Warning Notification', 'VZen service broken.')
+    time.sleep(15.0)
