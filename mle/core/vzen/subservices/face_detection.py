@@ -20,6 +20,9 @@ import os
 from typing import Optional
 
 import cv2
+# TODO(xames3): Remove suppressed pyright warnings.
+# pyright: reportMissingImports=false
+import dlib
 import numpy as np
 
 from mle.utils.common import mle_path
@@ -30,14 +33,16 @@ from mle.vars import models
 models_path = os.path.join(mle_path, 'core/vzen/models/')
 caffe_model = os.path.join(models_path, models.FACE_CAFFEMODEL)
 prototext = os.path.join(models_path, models.FACE_PROTOTEXT)
+dlib_landmarks = dlib.shape_predictor(os.path.join(models_path,
+                                                   models.FACE_LANDMARKS))
 # Loading serialized CaffeModel for face detection.
 # TODO(xames3): Create face recognition caffemodel for XA.
 net = cv2.dnn.readNetFromCaffe(prototext, caffe_model)
 
 
 def detect_faces(frame: np.ndarray,
-                 confidence: Optional[float] = models.DETECTED_FACE_CONFIDENCE
-                 ) -> None:
+                 confidence: Optional[float] = models.DETECTED_FACE_CONFIDENCE,
+                 landmarks: Optional[bool] = False) -> None:
   """Detect faces in the frame.
 
   Detect faces in the frame and draw bounding box around the detected
