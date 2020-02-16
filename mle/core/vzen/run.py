@@ -33,6 +33,8 @@ respective names.
 
 import time
 
+# TODO(xames3): Remove suppressed pyright warnings.
+# pyright: reportMissingTypeStubs=false
 import cv2
 
 from mle.utils.common import vzen_toast
@@ -47,7 +49,7 @@ while True:
   while stream.isOpened():
     _, frame = stream.read()
     frame = rescale(frame, width=350)
-    detect_faces(frame)
+    detect_faces(frame, landmarks=True)
     # Terminate the stream after pressing 'Esc' key.
     cv2.imshow('MLE VZen', frame)
     if cv2.waitKey(1) & 0xFF == int(27):

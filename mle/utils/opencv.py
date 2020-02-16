@@ -18,6 +18,8 @@
 
 from typing import List, Optional, Tuple, Union
 
+# TODO(xames3): Remove suppressed pyright warnings.
+# pyright: reportMissingTypeStubs=false
 import cv2
 import numpy as np
 
