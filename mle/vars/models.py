@@ -19,7 +19,7 @@
 # OpenCV models path
 FACE_PROTOTEXT = 'deploy.prototxt.txt'
 FACE_CAFFEMODEL = 'res10_300x300_ssd_iter_140000.caffemodel'
-FACE_LANDMARKS = 'facial_landmarks.dat'
+FACE_LANDMARKS = 'shape_predictor_5_face_landmarks.dat'
 TEXT_EAST_DETECTOR = 'frozen_east_text_detection.pb'
 
 # Confidence scores
