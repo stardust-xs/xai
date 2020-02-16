@@ -19,21 +19,24 @@
 import os
 from typing import Optional
 
-import cv2
 # TODO(xames3): Remove suppressed pyright warnings.
 # pyright: reportMissingImports=false
+# pyright: reportMissingTypeStubs=false
+import cv2
 import dlib
 import numpy as np
+from imutils import face_utils
 
 from mle.utils.common import mle_path
 from mle.utils.opencv import draw_box_with_tuple, rescale
-from mle.vars import models
+from mle.vars import colors, models
 
 # This is the path where used models are stored.
 models_path = os.path.join(mle_path, 'core/vzen/models/')
 caffe_model = os.path.join(models_path, models.FACE_CAFFEMODEL)
 prototext = os.path.join(models_path, models.FACE_PROTOTEXT)
-dlib_landmarks = dlib.shape_predictor(os.path.join(models_path,
+face_detector = dlib.get_frontal_face_detector()
+face_landmarks = dlib.shape_predictor(os.path.join(models_path,
                                                    models.FACE_LANDMARKS))
 # Loading serialized CaffeModel for face detection.
 # TODO(xames3): Create face recognition caffemodel for XA.
@@ -80,3 +83,31 @@ def detect_faces(frame: np.ndarray,
       continue
     x0, y0, x1, y1 = coords.astype('int')
     draw_box_with_tuple(frame, (x0, y0), (x1, y1))
+    if landmarks:
+      apply_landmarks(frame)
+
+
+def apply_landmarks(frame: np.ndarray) -> None:
+  """Applies facial landmarks.
+
+  Applies 5 point facial landmarks to the detected face.
+
+  Args:
+    frame: Numpy array of the captured frame.
+  """
+  gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+  faces = face_detector(gray_frame, 0)
+  # Loop over all the faces in the frame.
+  for face in faces:
+    x, y, _, _ = face_utils.rect_to_bb(face)
+    shape = face_landmarks(gray_frame, face)
+    shape = face_utils.shape_to_np(shape)
+    # Draw detected face landmarks - eyes and nose tip.
+    for (x, y) in shape:
+      cv2.circle(frame, (x, y), 2, colors.red, -1)
+
+
+def count_faces(frame: np.ndarray) -> int:
+  """Count total number of faces in the frame."""
+  gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+  return len(face_detector(gray_frame, 0))
