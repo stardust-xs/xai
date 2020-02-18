@@ -21,6 +21,7 @@
 		"workbench.settings.editor": "json",
 		"workbench.iconTheme": "material-icon-theme",
 		"workbench.colorTheme": "One Monokai",
-		"workbench.tree.indent": 20
+		"workbench.tree.indent": 20,
+		"git.ignoreLimitWarning": true
 	}
 }
