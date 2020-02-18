@@ -127,9 +127,9 @@ dmypy.json
 # Ignored on-device directories
 misc/
 mle/data/monitor/
+mle/data/vzen/
 
 # Ignored on-device files
-mle/core/vzen/data/
 mle/core/vzen/models/res10_300x300_ssd_iter_140000.caffemodel
 mle/core/vzen/models/deploy.prototxt.txt
 mle/core/vzen/models/facial_landmarks.dat
