@@ -21,9 +21,12 @@ import io
 import os
 import pstats
 import socket
+from pathlib import Path
 from datetime import datetime
 from typing import Callable, List, Optional, Union
 
+# TODO(xames3): Remove suppressed pyright warnings.
+# pyright: reportMissingTypeStubs=false
 from fuzzywuzzy import fuzz, process
 from win10toast import ToastNotifier
 
@@ -86,7 +89,7 @@ def toast(name: str, message: str, timeout: Optional[int] = 15) -> None:
 
 
 def vzen_toast(name: str, message: str, timeout: Optional[int] = 3) -> None:
-  """Display toast message for VZen services."""
+  """Display toast message for VZen services without threading."""
   # You can find the example code here:
   # https://github.com/jithurjacob/Windows-10-Toast-Notifications#example
   notifier = ToastNotifier()
@@ -95,21 +98,31 @@ def vzen_toast(name: str, message: str, timeout: Optional[int] = 3) -> None:
 
 def now() -> datetime:
   """Return current time without microseconds."""
+  # This function can be used for calculating start time and time delta.
   return datetime.now().replace(microsecond=0)
 
 
 def profile(function: Callable) -> Callable:
   """Decorator that uses cProfile to profile a function."""
-
+  # Profiling is necessary and should be used for optimizing the overall
+  # performance.
   def inner(*args, **kwargs):
-    _profile = cProfile.Profile()
-    _profile.enable()
+    prof = cProfile.Profile()
+    prof.enable()
     retval = function(*args, **kwargs)
-    _profile.disable()
+    prof.disable()
     string = io.StringIO()
-    ps = pstats.Stats(_profile, stream=string).sort_stats('cumulative')
+    ps = pstats.Stats(prof, stream=string).sort_stats('cumulative')
     ps.print_stats()
     print(string.getvalue())
     return retval
 
   return inner
+
+
+def ordered_rename(directory: str, prefix: Optional[str] = None) -> None:
+  """Renames file in order possibly with an optional prefix."""
+  prefix = ''.join([prefix, '_']) if prefix else ''
+  for idx, file in enumerate(sorted(os.listdir(directory))):
+    file = os.path.join(directory, file)
+    os.rename(file, file.replace(Path(file).stem, ''.join([prefix, str(idx)])))
