@@ -22,8 +22,9 @@ from typing import List, Optional, Tuple, Union
 # pyright: reportMissingTypeStubs=false
 import cv2
 import numpy as np
+import imutils
 
-from mle.vars.colors import green, yellow
+from mle.vars.colors import red, white
 
 
 def rescale(frame: np.ndarray,
@@ -31,7 +32,7 @@ def rescale(frame: np.ndarray,
             height: Optional[int] = None,
             interpolation: Optional[object] = cv2.INTER_AREA) -> np.ndarray:
   """Rescale the frame.
-  
+
   Rescale the stream to a desirable size. This is required before
   performing the necessary operations.
 
@@ -44,22 +45,6 @@ def rescale(frame: np.ndarray,
 
   Returns:
     Rescaled numpy array for the input frame.
-
-  Example:
-    >>> import cv2
-    >>> from mle.utils.opencv import rescale
-    >>> 
-    >>> stream = cv2.VideoCapture(0) 
-    >>> 
-    >>> while True:
-    ...   _, frame = stream.read()
-    ...   frame = rescale(frame, width=300, interpolation=cv2.INTER_LANCZOS4)
-    ...   cv2.imshow('Test feed', frame)
-    ...   if cv2.waitKey(5) & 0xFF == int(27):
-    ...     break
-    >>> stream.release()
-    >>> cv2.destroyAllWindows()
-    >>>
   """
   dimensions = None
   frame_height, frame_width = frame.shape[:2]
@@ -83,11 +68,12 @@ def disconnect(stream: np.ndarray) -> None:
   cv2.destroyAllWindows()
 
 
-def draw_box_with_tuple(frame: np.ndarray,
-                        start_xy: Tuple,
-                        end_xy: Tuple,
-                        color: Optional[List] = yellow,
-                        thickness: Optional[int] = 1) -> None:
+def draw_bounding_box(frame: np.ndarray, 
+                      x0_y0: Tuple,
+                      x1_y1: Tuple,
+                      color: Optional[List] = red,
+                      alpha: Optional[Union[float, int]] = 0.3,
+                      thickness: Optional[int] = 2) -> None:
   """Draw bounding box using the Numpy tuple.
 
   Draws the bounding box around the detection using tuple of numpy
@@ -95,35 +81,44 @@ def draw_box_with_tuple(frame: np.ndarray,
 
   Args:
     frame: Numpy array of the image frame.
-    start_xy: Tuple of top left coordinates.
-    end_xy: Tuple of bottom right coordinates.
+    x0_y0: Tuple of top left coordinates.
+    x1_y1: Tuple of bottom right coordinates.
     color: Bounding box (default: yellow) color.
+    alpha: Opacity of the detected region overlay.
     thickness: Thickness (default: 1) of the bounding box.
 
   Note:
     This method can be used for drawing the bounding boxes around
     objects whose coordinates are derived from a Machine Learning based
-    model. For Haar based detections, use `draw_box_with_coords()`.
+    model.
+
+    * For Haar based detections, use the below settings -
+        draw_bounding_box(frame, x0, y0, (x1 - x0), (y1 - y0))
+    * For adding the detection name, add the below settings - 
+        (x0, y0), (x1, y1) = x0_y0, x1_y1
+        cv2.rectangle(frame, (x0, y1), (x1, y1 + 20), color, -1)
   """
-  return cv2.rectangle(frame, start_xy, end_xy, color, thickness)
+  overlay = frame.copy()
+  cv2.rectangle(overlay, x0_y0, x1_y1, color, -1)
+  cv2.rectangle(frame, x0_y0, x1_y1, color, thickness)
+  cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
 
 
-def draw_box_with_coords(frame: np.ndarray, x: Union[int], y: Union[int],
-                         w: Union[int], h: Union[int],
-                         color: Optional[List] = green,
-                         thickness: Optional[int] = 1) -> None:
-  """Draw bounding box using individual coords.
-
-  Draws a bounding box around the detected object using all 4 available
-  coordinates. This function is ideal to use with Haar based detections.
-
-  Args:
-    frame: Numpy array of the image frame.
-    x: Top left X-position of the detected object.
-    y: Top left Y-position of the detected object.
-    w: Bottom right X-position of the detected object.
-    w: Bottom right Y-position of the detected object.
-    color: Bounding box (default: green) color.
-    thickness: Thickness (default: 1) of the bounding box.
-  """
-  return cv2.rectangle(frame, (x, y), (x + w, y + h), color, thickness)
+def draw_centroid(frame: np.ndarray,
+                  radius: Optional[int] = 5,
+                  color: Optional[List] = white,
+                  thickness: Optional[int] = 1) -> None:
+  """Draw centroid for the detected shape/contour."""
+  gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+  blur_frame = cv2.GaussianBlur(gray_frame, (5, 5), 0)
+  threshold = cv2.threshold(blur_frame, 60, 255, cv2.THRESH_BINARY)[1]
+  contours = cv2.findContours(threshold.copy(),
+                              cv2.RETR_EXTERNAL,
+                              cv2.CHAIN_APPROX_SIMPLE)
+  contours = imutils.grab_contours(contours)
+  for contour in contours:
+    moment = cv2.moments(contour)
+    x = int(moment['m10'] / moment['m00']) if moment['m00'] > 0 else 0
+    y = int(moment['m01'] / moment['m00']) if moment['m00'] > 0 else 0
+    cv2.drawContours(frame, [contour], -1, color, thickness)
+    cv2.circle(frame, (x, y), radius, color, -1)
