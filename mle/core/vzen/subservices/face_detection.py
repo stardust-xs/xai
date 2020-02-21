@@ -28,7 +28,7 @@ import numpy as np
 from imutils import face_utils
 
 from mle.utils.common import mle_path
-from mle.utils.opencv import draw_box_with_tuple, rescale
+from mle.utils.opencv import draw_bounding_box, rescale
 from mle.vars import colors, models
 
 # This is the path where used models are stored.
@@ -54,10 +54,13 @@ def detect_faces(frame: np.ndarray,
   Args:
     frame: Numpy array of the captured frame.
     confidence: Floating (default: 0.7) value for facial confidence.
+    landmarks: Boolean (default: False) value if landmarks to be shown.
 
   Note:
     Faces will only be detected if the confidence scores are above the
     `models.DETECTED_FACE_CONFIDENCE` value.
+    Using landmarks can slow down the stream and the overall usability.
+    Hence, use sparingly!
   """
   height, width = frame.shape[:2]
   # You can learn more about blob here:
@@ -82,7 +85,7 @@ def detect_faces(frame: np.ndarray,
     if detected_confidence < confidence:
       continue
     x0, y0, x1, y1 = coords.astype('int')
-    draw_box_with_tuple(frame, (x0, y0), (x1, y1))
+    draw_bounding_box(frame, (x0, y0), (x1, y1))
     if landmarks:
       apply_landmarks(frame)
 
@@ -90,11 +93,19 @@ def detect_faces(frame: np.ndarray,
 def apply_landmarks(frame: np.ndarray) -> None:
   """Applies facial landmarks.
 
-  Applies 5 point facial landmarks to the detected face.
+  Applies 5 point facial landmarks to the detected face instead of 68.
+  This implementation is based on Adrian Rosebrock's, `(Faster) Facial
+  landmark detector with dlib` blog.
 
   Args:
     frame: Numpy array of the captured frame.
+
+  Note:
+    Using landmarks can slow down the stream and the overall usability.
+    Hence, use sparingly!
   """
+  # You can find the reference code here:
+  # https://www.pyimagesearch.com/2018/04/02/faster-facial-landmark-detector-with-dlib/
   gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
   faces = face_detector(gray_frame, 0)
   # Loop over all the faces in the frame.
