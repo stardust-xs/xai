@@ -21,6 +21,7 @@ FACE_PROTOTEXT = 'deploy.prototxt.txt'
 FACE_CAFFEMODEL = 'res10_300x300_ssd_iter_140000.caffemodel'
 FACE_LANDMARKS = 'shape_predictor_5_face_landmarks.dat'
 TEXT_EAST_DETECTOR = 'frozen_east_text_detection.pb'
+FACE_ENCODINGS = 'face_encodings.xa'
 
 # Confidence scores
 DETECTED_FACE_CONFIDENCE = 0.7
