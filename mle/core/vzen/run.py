@@ -37,8 +37,8 @@ import time
 # pyright: reportMissingTypeStubs=false
 import cv2
 
-from mle.utils.common import vzen_toast
 from mle.core.vzen.subservices.face_detection import detect_faces
+from mle.utils.common import vzen_toast
 from mle.utils.opencv import disconnect, rescale
 
 while True:
@@ -48,8 +48,8 @@ while True:
   # Keep the service running.
   while stream.isOpened():
     _, frame = stream.read()
-    frame = rescale(frame, width=350)
-    detect_faces(frame, landmarks=True)
+    frame = rescale(frame, width=300)
+    detect_faces(frame, landmarks=False)
     # Terminate the stream after pressing 'Esc' key.
     cv2.imshow('MLE VZen', frame)
     if cv2.waitKey(1) & 0xFF == int(27):
