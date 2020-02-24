@@ -130,8 +130,9 @@ mle/data/monitor/
 mle/data/vzen/
 
 # Ignored on-device files
-mle/core/vzen/models/res10_300x300_ssd_iter_140000.caffemodel
-mle/core/vzen/models/deploy.prototxt.txt
-mle/core/vzen/models/facial_landmarks.dat
-mle/core/vzen/models/shape_predictor_5_face_landmarks.dat
-mle/core/vzen/models/frozen_east_text_detection.pb
+mle/models/res10_300x300_ssd_iter_140000.caffemodel
+mle/models/deploy.prototxt.txt
+mle/models/facial_landmarks.dat
+mle/models/shape_predictor_5_face_landmarks.dat
+mle/models/frozen_east_text_detection.pb
+mle/models/face_encodings.pickle
