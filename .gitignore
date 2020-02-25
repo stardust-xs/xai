@@ -125,9 +125,10 @@ dmypy.json
 .pyre/
 
 # Ignored on-device directories
+archive/
 misc/
-mle/data/monitor/
-mle/data/vzen/
+mle/data/raw/monitor/
+mle/data/raw/vzen/
 
 # Ignored on-device files
 mle/models/res10_300x300_ssd_iter_140000.caffemodel
