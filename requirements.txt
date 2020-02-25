@@ -9,3 +9,5 @@ uiautomation
 win10toast
 imutils
 opencv-contrib-python
+keras
+matplotlib
