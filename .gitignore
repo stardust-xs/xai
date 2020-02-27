@@ -129,6 +129,10 @@ archive/
 misc/
 mle/data/raw/monitor/
 mle/data/raw/vzen/
+mle/data/raw/
+mle/data/test/
+mle/data/train/
+mle/data/validation/
 
 # Ignored on-device files
 mle/models/res10_300x300_ssd_iter_140000.caffemodel
@@ -136,4 +140,3 @@ mle/models/deploy.prototxt.txt
 mle/models/facial_landmarks.dat
 mle/models/shape_predictor_5_face_landmarks.dat
 mle/models/frozen_east_text_detection.pb
-mle/models/face_encodings.pickle
