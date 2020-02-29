@@ -27,8 +27,8 @@ The module should* be able to configured to run at windows boot and stay
 running in background or provide some kind of service or let alone run
 independently.
 
-Any/All generated reports are stored in `./mle/data/vzen/` with their
-respective names.
+Any/All generated reports are stored in `./mle/data/raw/vzen/` with
+their respective names.
 """
 
 import time
@@ -37,19 +37,19 @@ import time
 # pyright: reportMissingTypeStubs=false
 import cv2
 
-from mle.core.vzen.subservices.face_detection import detect_faces
+from mle.core.vzen.subservices.face_detector import detect_faces
 from mle.utils.common import vzen_toast
 from mle.utils.opencv import disconnect, rescale
 
 while True:
   stream = cv2.VideoCapture(0)
   vzen_toast('MLE VZen', 'VZen service started.')
-  time.sleep(5.0)
+  time.sleep(2.0)
   # Keep the service running.
   while stream.isOpened():
     _, frame = stream.read()
     frame = rescale(frame, width=300)
-    detect_faces(frame, landmarks=False)
+    detect_faces(frame)
     # Terminate the stream after pressing 'Esc' key.
     cv2.imshow('MLE VZen', frame)
     if cv2.waitKey(1) & 0xFF == int(27):
