@@ -18,10 +18,12 @@
 
 from typing import Optional, Tuple, Union
 
+# TODO(xames3): Remove suppressed pyright warnings.
+# pyright: reportMissingTypeStubs=false
 import geopy
 import requests
 
-from mle.vars import dev
+from mle.constants import defaults
 
 
 def get_coordinates(address: str) -> Tuple:
@@ -62,18 +64,21 @@ def weather(darksky_key: str, address: str) -> Optional[Tuple]:
     ValueError: If the function is called without a valid API key.
   """
   latitude, longitude = get_coordinates(address)
-  url = f'{dev.WEATHER_URL}{darksky_key}/{latitude},{longitude}?units=si'
-  obj = requests.get(url).json()
-  return (obj['latitude'], obj['longitude'], obj['currently']['summary'],
-          obj['currently']['temperature'],
-          obj['daily']['data'][0]['temperatureMax'],
-          obj['daily']['data'][0]['temperatureMin'],
-          obj['currently']['apparentTemperature'],
-          obj['daily']['data'][0]['apparentTemperatureMax'],
-          obj['daily']['data'][0]['apparentTemperatureMin'],
-          obj['currently']['dewPoint'], obj['currently']['humidity'],
-          obj['currently']['pressure'], obj['currently']['windSpeed'],
-          obj['currently']['windGust'], obj['currently']['windBearing'],
-          wind_direction(obj['currently']['windBearing']),
-          obj['currently']['cloudCover'], obj['currently']['uvIndex'],
-          obj['currently']['visibility'], obj['currently']['ozone'])
+  url = f'{defaults.WEATHER_URL}{darksky_key}/{latitude},{longitude}?units=si'
+  try:
+    obj = requests.get(url).json()
+    return (obj['latitude'], obj['longitude'], obj['currently']['summary'],
+            obj['currently']['temperature'],
+            obj['daily']['data'][0]['temperatureMax'],
+            obj['daily']['data'][0]['temperatureMin'],
+            obj['currently']['apparentTemperature'],
+            obj['daily']['data'][0]['apparentTemperatureMax'],
+            obj['daily']['data'][0]['apparentTemperatureMin'],
+            obj['currently']['dewPoint'], obj['currently']['humidity'],
+            obj['currently']['pressure'], obj['currently']['windSpeed'],
+            obj['currently']['windGust'], obj['currently']['windBearing'],
+            wind_direction(obj['currently']['windBearing']),
+            obj['currently']['cloudCover'], obj['currently']['uvIndex'],
+            obj['currently']['visibility'], obj['currently']['ozone'])
+  except ValueError:
+    return None
