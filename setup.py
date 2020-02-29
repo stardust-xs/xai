@@ -18,7 +18,7 @@
 
 from setuptools import find_packages, setup
 
-from mle.vars import dev
+from mle.constants import project
 
 
 def use_readme() -> str:
@@ -31,13 +31,13 @@ with open('requirements.txt', 'r') as requirements:
   required_packages = [package.rstrip() for package in requirements]
 
 setup(
-  name=dev.PROJECT_NAME,
-  version=dev.PROJECT_VERSION,
-  url=dev.PROJECT_LINK,
-  author=dev.AUTHOR,
-  author_email=dev.AUTHOR_EMAIL,
-  maintainer=dev.AUTHOR,
-  maintainer_email=dev.AUTHOR,
+  name=project.PROJECT_NAME,
+  version=project.PROJECT_VERSION,
+  url=project.PROJECT_LINK,
+  author=project.AUTHOR,
+  author_email=project.AUTHOR_EMAIL,
+  maintainer=project.AUTHOR,
+  maintainer_email=project.AUTHOR,
   classifiers=[
     'Development Status :: 1 - Planning',
     'Intended Audience :: Developers',
@@ -74,8 +74,8 @@ setup(
     'Topic :: System :: Monitoring',
     'Topic :: System :: Networking :: Monitoring :: Hardware Watchdog',
     'Topic :: System :: Networking :: Time Synchronization',
-    ],
-  license=dev.PROJECT_LICENSE,
+  ],
+  license=project.PROJECT_LICENSE,
   description=__doc__,
   long_description=use_readme(),
   long_description_content_type='text/markdown',
