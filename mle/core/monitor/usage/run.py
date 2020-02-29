@@ -27,7 +27,7 @@ background monitoring the time spent on each application. And not only
 that but, record the usage of each application in a csv file on a daily
 basis.
 
-The generated reports are stored in `./mle/data/monitor/usage/` with
+The generated reports are stored in `./mle/data/raw/monitor/usage/` with
 their respective dates.
 """
 
@@ -35,52 +35,55 @@ import os
 import time
 from datetime import datetime, timedelta
 
+from mle.constants import defaults
 from mle.core.monitor.usage.app import get_active_window, split_time_spent
-from mle.utils.common import mle_path, now, toast
+from mle.utils import symlinks
+from mle.utils.common import now, toast
 from mle.utils.write import update_data
-from mle.vars import dev
-
-# This is the path where the monitored data is going to be stored.
-_DIR_PATH = 'data/monitor/usage'
 
 header = ['activity', 'app', 'executable', 'user', 'started',
           'stopped', 'spent', 'days', 'hours', 'mins', 'secs']
 previous_window = previous_app = previous_exe = previous_user = None
-data_path = os.path.join(mle_path, _DIR_PATH)
-toast('MLE Application Monitor', 'Application monitoring service started.')
-start_time = now()
-# Keep the service running.
-while True:
-  active_window, active_app, active_exe, active_user = get_active_window()
-  # If current time exceeds beyond DAY_LIMIT, save records to new file.
-  if datetime.now().strftime(dev.DAY_LIMIT_FORMAT) >= dev.DAY_LIMIT:
-    timestamp = datetime.now() + timedelta(days=1)
-  else:
-    timestamp = datetime.now()
-  csv = ''.join([timestamp.strftime(dev.CSV_TS_FORMAT), '.csv'])
-  file = os.path.join(data_path, csv)
-  # Skip Task Switching application.
-  if active_window and active_window != 'Task Switching':
-    if (previous_window != active_window
-      and datetime.now().strftime(dev.DAY_LIMIT_FORMAT) != dev.DAY_LIMIT):
-      end_time = now()
-      total_time = end_time - start_time
-      spent_secs = total_time.total_seconds()
-      usage = split_time_spent(total_time)
-      # Only track applications which are used for more than 1 second.
-      if usage != (0, 0, 0, 0):
-        try:
-          update_data(file, header, previous_window, previous_app,
-                      previous_exe, previous_user, start_time, end_time,
-                      spent_secs, usage[0], usage[1], usage[2], usage[3])
-        except PermissionError:
-          toast('MLE Application Monitor - Error Notification',
-                'File accessed by another application.')
-        finally:
-          start_time = now()
-    previous_window = active_window
-    previous_app = active_app
-    previous_exe = active_exe
-    previous_user = active_user
-  # Check if the application is changed after 1 second.
-  time.sleep(1)
+
+try:
+  toast('MLE Application Monitor', 'Application monitoring service started.')
+  start_time = now()
+  # Keep the service running.
+  while True:
+    active_window, active_app, active_exe, active_user = get_active_window()
+    # If current time exceeds beyond DAY_LIMIT, save records to new file.
+    if datetime.now().strftime(defaults.DAY_LIMIT_FORMAT) >= defaults.DAY_LIMIT:
+      timestamp = datetime.now() + timedelta(days=1)
+    else:
+      timestamp = datetime.now()
+    csv = ''.join([timestamp.strftime(defaults.CSV_TS_FORMAT), '.csv'])
+    file = os.path.join(symlinks.usage, csv)
+    # Skip Task Switching application.
+    if active_window and active_window != 'Task Switching':
+      if (previous_window != active_window
+          and datetime.now().strftime(defaults.DAY_LIMIT_FORMAT)
+          != defaults.DAY_LIMIT):
+        end_time = now()
+        total_time = end_time - start_time
+        spent_secs = total_time.total_seconds()
+        usage = split_time_spent(total_time)
+        # Only track applications which are used for more than 1 second.
+        if usage != (0, 0, 0, 0):
+          try:
+            update_data(file, header, previous_window, previous_app,
+                        previous_exe, previous_user, start_time, end_time,
+                        spent_secs, usage[0], usage[1], usage[2], usage[3])
+          except PermissionError:
+            toast('MLE Application Monitor - Error Notification',
+                  'File accessed by another application.')
+          finally:
+            start_time = now()
+      previous_window = active_window
+      previous_app = active_app
+      previous_exe = active_exe
+      previous_user = active_user
+    # Check if the application is changed after 1 second.
+    time.sleep(1)
+except Exception:
+  toast('MLE Application Monitor - Error Notification',
+        'Something went wrong with the service.')

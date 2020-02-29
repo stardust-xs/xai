@@ -29,21 +29,20 @@ The module is configured to run at windows boot and keep it running in
 background recording the weather of Mumbai every 30 mins and logging it
 in a csv file on a daily basis.
 
-The generated reports are stored in `./mle/data/monitor/weather/` with
-their respective dates.
+The generated reports are stored in `./mle/data/raw/monitor/weather/`
+with their respective dates.
 """
 
 import os
 import time
 from datetime import datetime, timedelta
 
+from mle.constants import defaults
 from mle.core.monitor.weather.get import weather
-from mle.utils.common import check_internet, mle_path, now, toast
+from mle.utils import symlinks
+from mle.utils.common import check_internet, now, toast
 from mle.utils.write import update_data
-from mle.vars import dev
 
-# This is the path where the monitored weather is going to be stored.
-_DIR_PATH = 'data/monitor/weather'
 # Location for which the weather needs to be monitored.
 _CITY = 'Mumbai'
 
@@ -52,40 +51,45 @@ header = ['time', 'year', 'month', 'day', 'hour', 'mins', 'latitude',
           'max_apptemp', 'min_apptemp', 'dewpoint', 'humidty', 'pressure',
           'windspeed', 'windgust', 'windbearing', 'winddirection',
           'cloudcover', 'uv', 'visibility', 'ozone']
-data_path = os.path.join(mle_path, _DIR_PATH)
-toast('MLE Weather Monitor', 'Weather monitoring service started.')
-next_weather_check_time = now()
-# Keep the service running.
-while True:
-  # If current time exceeds beyond DAY_LIMIT, save records to new file.
-  if datetime.now().strftime(dev.DAY_LIMIT_FORMAT) >= dev.DAY_LIMIT:
-    timestamp = datetime.now() + timedelta(days=1)
-  else:
-    timestamp = datetime.now()
-  csv = ''.join([timestamp.strftime(dev.CSV_TS_FORMAT), '.csv'])
-  file = os.path.join(data_path, csv)
-  # Current time of making an API call (Weather check).
-  start_time = now()
-  if (start_time >= next_weather_check_time
-    and datetime.now().strftime(dev.DAY_LIMIT_FORMAT) != dev.DAY_LIMIT):
-    next_weather_check_time = start_time + timedelta(minutes=30)
-    if check_internet():
-      try:
-        obj = weather(os.environ['DARKSKY_KEY'], _CITY)
-        update_data(file, header, start_time, start_time.year,
-                    start_time.month, start_time.day, start_time.hour,
-                    start_time.minute, obj[0], obj[1], obj[2],
-                    obj[3], obj[4], obj[5], obj[6], obj[7], obj[8],
-                    obj[9], obj[10], obj[11], obj[12], obj[13],
-                    obj[14], obj[15], obj[17], obj[18], obj[19])
-      except (ConnectionError, ConnectionResetError):
-        toast('MLE Weather Monitor - Error Notification',
-              'Internet connection is questionable.')
-      except PermissionError:
-        toast('MLE Weather Monitor - Error Notification',
-              'File accessed by another application.')
+
+try:
+  toast('MLE Weather Monitor', 'Weather monitoring service started.')
+  next_weather_check_time = now()
+  # Keep the service running.
+  while True:
+    # If current time exceeds beyond DAY_LIMIT, save records to new file.
+    if datetime.now().strftime(defaults.DAY_LIMIT_FORMAT) >= defaults.DAY_LIMIT:
+      timestamp = datetime.now() + timedelta(days=1)
     else:
-      toast('MLE Weather Monitor - Skipping Track',
-            'Internet connection not available.')
-  # Let the checks be made after 1 second sleep.
-  time.sleep(1)
+      timestamp = datetime.now()
+    csv = ''.join([timestamp.strftime(defaults.CSV_TS_FORMAT), '.csv'])
+    file = os.path.join(symlinks.weather, csv)
+    # Current time of making an API call (Weather check).
+    start_time = now()
+    if (start_time >= next_weather_check_time
+        and datetime.now().strftime(defaults.DAY_LIMIT_FORMAT)
+        != defaults.DAY_LIMIT):
+      next_weather_check_time = start_time + timedelta(minutes=30)
+      if check_internet():
+        try:
+          obj = weather(os.environ['DARKSKY_KEY'], _CITY)
+          update_data(file, header, start_time, start_time.year,
+                      start_time.month, start_time.day, start_time.hour,
+                      start_time.minute, obj[0], obj[1], obj[2],
+                      obj[3], obj[4], obj[5], obj[6], obj[7], obj[8],
+                      obj[9], obj[10], obj[11], obj[12], obj[13],
+                      obj[14], obj[15], obj[17], obj[18], obj[19])
+        except (ConnectionError, ConnectionResetError):
+          toast('MLE Weather Monitor - Error Notification',
+                'Internet connection is questionable.')
+        except PermissionError:
+          toast('MLE Weather Monitor - Error Notification',
+                'File accessed by another application.')
+      else:
+        toast('MLE Weather Monitor - Skipping Track',
+              'Internet connection not available.')
+    # Let the checks be made after 1 second sleep.
+    time.sleep(1)
+except Exception:
+  toast('MLE Weather Monitor - Error Notification',
+        'Something went wrong with the service.')
