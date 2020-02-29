@@ -18,29 +18,35 @@
 
 import os
 
-from mle.vars import models
+from mle.constants import models as _models
 
 # Parent directory symlink.
-parent_sl = os.path.dirname(os.path.dirname(__file__))
+parent = os.path.dirname(os.path.dirname(__file__))
 
 # Subsequent symlinks.
-data_sl = os.path.join(parent_sl, 'data')
-files_sl = os.path.join(parent_sl, 'files')
-models_sl = os.path.join(parent_sl, 'models')
-stats_sl = os.path.join(parent_sl, 'stats')
+data = os.path.join(parent, 'data')
+files = os.path.join(parent, 'files')
+models = os.path.join(parent, 'models')
+stats = os.path.join(parent, 'stats')
 
 # Child symlinks.
-monitor_sl = os.path.join(data_sl, 'monitor')
-vzen_sl = os.path.join(data_sl, 'vzen')
+raw = os.path.join(data, 'raw')
+test = os.path.join(data, 'test')
+train = os.path.join(data, 'train')
+validation = os.path.join(data, 'validation')
 
-# Symlinks to save all data_sl for training purposes.
-usage_sl = os.path.join(monitor_sl, 'usage')
-weather_sl = os.path.join(monitor_sl, 'weather')
-train_faces_sl = os.path.join(vzen_sl, 'train_faces')
+# Grandchild symlinks.
+monitor = os.path.join(raw, 'monitor')
+vzen = os.path.join(raw, 'vzen')
+
+# Symlinks to save all data for training purposes.
+usage = os.path.join(monitor, 'usage')
+weather = os.path.join(monitor, 'weather')
+train_faces = os.path.join(vzen, 'train_faces')
 
 # Symlinks to all models related to OpenCV.
-caffemodel_sl = os.path.join(models_sl, models.FACE_CAFFEMODEL)
-prototext_sl = os.path.join(models_sl, models.FACE_PROTOTEXT)
-face_landmarks_sl = os.path.join(models_sl, models.FACE_LANDMARKS)
-east_text_detector_sl = os.path.join(models_sl, models.EAST_TEXT_DETECTOR)
-face_encodings_sl = os.path.join(models_sl, models.FACE_ENCODINGS)
+caffemodel = os.path.join(models, _models.FACE_CAFFEMODEL)
+prototext = os.path.join(models, _models.FACE_PROTOTEXT)
+face_landmarks = os.path.join(models, _models.FACE_LANDMARKS)
+east_text_detector = os.path.join(models, _models.EAST_TEXT_DETECTOR)
+xa_face_detector = os.path.join(models, _models.XA_FACE_FEATURES_DETECTOR)
