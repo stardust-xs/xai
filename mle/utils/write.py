@@ -20,7 +20,7 @@ import csv
 import os
 from typing import Any, List
 
-from mle.vars.dev import DEF_CHARSET
+from mle.constants import defaults
 
 
 def update_data(file: str, header: List, *args: Any) -> None:
@@ -33,14 +33,14 @@ def update_data(file: str, header: List, *args: Any) -> None:
 
 def write_data(file: str, *args: Any) -> None:
   """Write row of data to the `csv` file."""
-  with open(file, 'a', newline='', encoding=DEF_CHARSET) as _file:
+  with open(file, 'a', newline='', encoding=defaults.DEF_CHARSET) as _file:
     _csv = csv.writer(_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
     _csv.writerow([*args])
 
 
 def write_header(file: str, header: List, *args: Any) -> None:
   """Write header of data to the `csv` file."""
-  with open(file, 'w', newline='', encoding=DEF_CHARSET) as _file:
+  with open(file, 'w', newline='', encoding=defaults.DEF_CHARSET) as _file:
     _csv = csv.writer(_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
     _csv.writerow(header)
     _csv.writerow([*args])
