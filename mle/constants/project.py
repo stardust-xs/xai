@@ -40,7 +40,7 @@ PROJECT_LICENSE = 'Apache 2.0'
 # You can read about it here: https://semver.org/spec/v2.0.0.html
 # You need to update the project version for any critical change/fix
 # regularly.
-PROJECT_VERSION = '2.1'
+PROJECT_VERSION = '2.2'
 
 # Author(s) of this project.
 # If any new collaborator is added on GitHub, his/her name should be
