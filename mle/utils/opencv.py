@@ -24,7 +24,7 @@ import cv2
 import numpy as np
 import imutils
 
-from mle.vars.colors import red, white
+from mle.constants import colors
 
 
 def rescale(frame: np.ndarray,
@@ -63,17 +63,18 @@ def rescale(frame: np.ndarray,
 
 
 def disconnect(stream: np.ndarray) -> None:
-  """Disconnect stream and exit the program."""
+  """Disconnect stream and release cv2 object."""
   stream.release()
   cv2.destroyAllWindows()
 
 
-def draw_bounding_box(frame: np.ndarray, 
+def draw_bounding_box(frame: np.ndarray,
                       x0_y0: Tuple,
                       x1_y1: Tuple,
-                      color: Optional[List] = red,
-                      alpha: Optional[Union[float, int]] = 0.3,
-                      thickness: Optional[int] = 2) -> None:
+                      color: Tuple = colors.RED,
+                      alpha: Union[float, int] = 0.3,
+                      alpha_color: Tuple = colors.RED,
+                      thickness: int = 2) -> None:
   """Draw bounding box using the Numpy tuple.
 
   Draws the bounding box around the detection using tuple of numpy
@@ -83,8 +84,9 @@ def draw_bounding_box(frame: np.ndarray,
     frame: Numpy array of the image frame.
     x0_y0: Tuple of top left coordinates.
     x1_y1: Tuple of bottom right coordinates.
-    color: Bounding box (default: yellow) color.
+    color: Bounding box (default: red) color.
     alpha: Opacity of the detected region overlay.
+    alpha_color: Overlayed color (default: red).
     thickness: Thickness (default: 1) of the bounding box.
 
   Note:
@@ -92,6 +94,7 @@ def draw_bounding_box(frame: np.ndarray,
     objects whose coordinates are derived from a Machine Learning based
     model.
 
+  Usage:
     * For Haar based detections, use the below settings -
         draw_bounding_box(frame, x0, y0, (x1 - x0), (y1 - y0))
     * For adding the detection name, add the below settings - 
@@ -99,16 +102,29 @@ def draw_bounding_box(frame: np.ndarray,
         cv2.rectangle(frame, (x0, y1), (x1, y1 + 20), color, -1)
   """
   overlay = frame.copy()
-  cv2.rectangle(overlay, x0_y0, x1_y1, color, -1)
+  # Transparent/Alpha overlay rectangle layer.
+  cv2.rectangle(overlay, x0_y0, x1_y1, alpha_color, -1)
+  # Main bounding box.
   cv2.rectangle(frame, x0_y0, x1_y1, color, thickness)
   cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
 
 
 def draw_centroid(frame: np.ndarray,
-                  radius: Optional[int] = 5,
-                  color: Optional[List] = white,
-                  thickness: Optional[int] = 1) -> None:
-  """Draw centroid for the detected shape/contour."""
+                  radius: int = 5,
+                  color: Tuple = colors.WHITE,
+                  thickness: int = 1) -> None:
+  """Draw centroid for the detected shape/contour.
+
+  Draw a centroid for the detected shape/contour or an sharp edge.
+
+  Args:
+    frame: Numpy array of the image frame.
+    radius: Radius of the circle representing the centroid.
+    color: Bounding box (default: white) color.
+    thickness: Thickness (default: 1) of the bounding box.
+  """
+  # TODO(xames3): Add more details regarding below code lines.
+  # Convert the colored image into grayscale.
   gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
   blur_frame = cv2.GaussianBlur(gray_frame, (5, 5), 0)
   threshold = cv2.threshold(blur_frame, 60, 255, cv2.THRESH_BINARY)[1]
