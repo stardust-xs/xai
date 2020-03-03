@@ -46,20 +46,23 @@ def rescale(frame: np.ndarray,
   Returns:
     Rescaled numpy array for the input frame.
   """
-  dimensions = None
-  frame_height, frame_width = frame.shape[:2]
-  # If both width & height are None, then return the original frame.
-  if width is None and height is None:
+  try:
+    dimensions = None
+    frame_height, frame_width = frame.shape[:2]
+    # If both width & height are None, then return the original frame.
+    if width is None and height is None:
+      return frame
+    if width and height:
+      dimensions = (width, height)
+    elif width is None:
+      ratio = height / float(frame_height)
+      dimensions = (int(frame_width * ratio), height)
+    else:
+      ratio = width / float(frame_width)
+      dimensions = (width, int(frame_height * ratio))
+    return cv2.resize(frame, dimensions, interpolation=interpolation)
+  except cv2.error:
     return frame
-  if width and height:
-    dimensions = (width, height)
-  elif width is None:
-    ratio = height / float(frame_height)
-    dimensions = (int(frame_width * ratio), height)
-  else:
-    ratio = width / float(frame_width)
-    dimensions = (width, int(frame_height * ratio))
-  return cv2.resize(frame, dimensions, interpolation=interpolation)
 
 
 def disconnect(stream: np.ndarray) -> None:
