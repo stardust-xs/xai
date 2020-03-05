@@ -25,19 +25,21 @@ from typing import List, Optional
 # TODO(xames3): Remove suppressed pyright warnings.
 # pyright: reportMissingTypeStubs=false
 import numpy as np
+import matplotlib.pyplot as plt
+from keras.callbacks.callbacks import History
 
 from mle.constants import defaults
 from mle.utils import symlinks
 from mle.utils.common import now
 
 
-def training_session_name(timestamp_format: str = '%m%d%y') -> str:
+def training_session_date(timestamp_format: str = '%m%d%y') -> str:
   """Returns date timestamp of model training."""
   return str(now().strftime(timestamp_format))
 
 
 def train_test_val_directories(directory: str,
-                               session_name: Optional[str] = None) -> List:
+                               session_name: str = None) -> List:
   """Creates train, test and validation directories.
 
   Creates train, test and validation directories with respective name of
@@ -46,11 +48,12 @@ def train_test_val_directories(directory: str,
   Args:
     directory: Directory whose train, test and validation directories
                needs to be created.
+    session_name: Name of the current training session.
 
   Returns:
     List of created directories.
   """
-  session_name = session_name if session_name else training_session_name()
+  session_name = session_name if session_name else training_session_date()
   dirs = ['train', 'test', 'validation']
   sym_dirs = [os.path.join(symlinks.train, session_name),
               os.path.join(symlinks.test, session_name),
@@ -65,7 +68,7 @@ def train_test_val_directories(directory: str,
 
 
 def create_train_test_val_split(directory: str,
-                                session_name: Optional[str] = None,
+                                session_name: str = None,
                                 train_sample: Optional[int] = None) -> None:
   """Creates train, test and validation split of the dataset.
 
@@ -76,10 +79,12 @@ def create_train_test_val_split(directory: str,
   Args:
     directory: Directory whose train, test and validation split needs to
                be created.
+    session_name: Name of the current training session.
     train_sample: Number (default: None) of training samples to use.
   """
   # You can find the reference code here:
   # https://towardsdatascience.com/a-comprehensive-hands-on-guide-to-transfer-learning-with-real-world-applications-in-deep-learning-212bf3b2f27a
+  np.random.seed(42)
   # Using glob for getting all the files under ./<directory>/ directory.
   files = glob.glob(f'{directory}/*')
   all_files = [name for name in files if Path(directory).stem in name]
@@ -118,7 +123,7 @@ def create_train_test_val_split(directory: str,
 
 
 def create_small_dataset(directory: str,
-                         session_name: Optional[str] = None,
+                         session_name: str = None,
                          train_sample: Optional[int] = None) -> None:
   """Creates a smaller dataset.
 
@@ -127,13 +132,45 @@ def create_small_dataset(directory: str,
 
   Args:
     directory: Directory to be used for creating small dataset.
+    session_name: Name of the current training session.
     train_sample: Number (default: None) of training samples to use.
 
   Usage:
-    create_small_dataset('D:/mle/mle/data/raw/vzen', train_sample=500)
+    create_small_dataset('D:/mle/mle/data/raw/vzen', 'xa_2000', 2000)
   """
   all_files = glob.glob(f'{os.path.join(symlinks.train, directory)}/*')
   # Loop to perform train, test and validation split for the mentioned
   # directory.
   for idx in all_files:
     create_train_test_val_split(idx, session_name, train_sample)
+
+
+def fit_generator_plot(history: History,
+                       parameter: str,
+                       session_name: str,
+                       show_plot: bool = False,
+                       save_plot: bool = True) -> None:
+  """Save and show history plot for 'fit_generator()'.
+
+  Save and show history plot for selected parameter, accuracy or loss in
+  'fit_generator()'.
+
+  Args:
+    history: History object (dict) which stores stats of the trained
+             model.
+    parameter: History parameter, accuracy or loss.
+    session_name: Name of the current training session.
+    show_plot: Boolean (default: False) value to display the plot.
+    save_plot: Boolean (default: True) value to save the plot.
+
+  Note:
+    The saved plots would be saved in ./stats/ directory with the
+    'session_name'.
+  """
+  plt.plot(history.history[parameter], label=f'training_{parameter}')
+  plt.plot(history.history[f'val_{parameter}'], label=f'validation_{parameter}')
+  plt.legend()
+  if save_plot:
+    plt.savefig(os.path.join(symlinks.stats, f'{session_name}_{parameter}'))
+  if show_plot:
+    plt.show()
