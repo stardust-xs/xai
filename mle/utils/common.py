@@ -20,24 +20,23 @@ import cProfile
 import io
 import os
 import pstats
+import random
 import socket
-from pathlib import Path
 from datetime import datetime
-from typing import Callable, List, Optional, Union
+from pathlib import Path
+from typing import Callable, List, Optional, Tuple, Union
 
 # TODO(xames3): Remove suppressed pyright warnings.
 # pyright: reportMissingTypeStubs=false
 from fuzzywuzzy import fuzz, process
 from win10toast import ToastNotifier
 
-from mle.vars import dev
-
-mle_path = os.path.dirname(os.path.dirname(__file__))
+from mle.constants import colors, defaults
 
 
 def find_string(string: str,
                 search: List,
-                min_score: Optional[int] = 70) -> Optional[str]:
+                min_score: int = 70) -> Optional[str]:
   """Find string in the list using fuzzy logic.
 
   Find the matching string from the list. It works similar to `find`
@@ -58,7 +57,8 @@ def find_string(string: str,
   # This will give a list of 3 best matches for our search query. The
   # number of best matches can be varied by altering the value of
   # `limit` parameter.
-  guessed = process.extract(string, search, limit=3, scorer=fuzz.partial_ratio)
+  guessed = process.extract(string, search, limit=3,
+                            scorer=fuzz.partial_ratio)
 
   for best_guess in guessed:
     current_score = fuzz.partial_ratio(string, best_guess)
@@ -68,19 +68,20 @@ def find_string(string: str,
       raise ValueError(f'Couldn\'t find "{string}" in the given list.')
 
 
-def check_internet(timeout: Optional[Union[float, int]] = 10.0) -> bool:
+def check_internet(timeout: Union[float, int] = 10.0) -> bool:
   """Check the internet connectivity."""
   # You can find the reference code here:
   # https://gist.github.com/yasinkuyu/aa505c1f4bbb4016281d7167b8fa2fc2
   try:
-    socket.create_connection((dev.PING_URL, dev.PING_PORT), timeout=timeout)
+    socket.create_connection((defaults.PING_URL, defaults.PING_PORT),
+                             timeout=timeout)
     return True
   except OSError:
     pass
   return False
 
 
-def toast(name: str, message: str, timeout: Optional[int] = 15) -> None:
+def toast(name: str, message: str, timeout: int = 15) -> None:
   """Display toast message."""
   # You can find the example code here:
   # https://github.com/jithurjacob/Windows-10-Toast-Notifications#example
@@ -88,7 +89,7 @@ def toast(name: str, message: str, timeout: Optional[int] = 15) -> None:
   notifier.show_toast(title=name, msg=message, duration=timeout, threaded=True)
 
 
-def vzen_toast(name: str, message: str, timeout: Optional[int] = 3) -> None:
+def vzen_toast(name: str, message: str, timeout: int = 3) -> None:
   """Display toast message for VZen services without threading."""
   # You can find the example code here:
   # https://github.com/jithurjacob/Windows-10-Toast-Notifications#example
@@ -121,8 +122,25 @@ def profile(function: Callable) -> Callable:
 
 
 def ordered_rename(directory: str, prefix: Optional[str] = None) -> None:
-  """Renames file in order possibly with an optional prefix."""
+  """Rename files in order possibly with an optional prefix.
+
+  Batch rename files in a directory with an optional prefix or just by
+  default numeric order.
+
+  Args:
+    directory: Directory path of the files to be renamed.
+    prefix: Optional (default: None) prefix for the renamed files.
+
+  Note:
+    Use this function when you need to batch rename files in an ordered
+    manner. This can be performed before starting the training process.
+  """
   prefix = ''.join([prefix, '_']) if prefix else ''
   for idx, file in enumerate(sorted(os.listdir(directory))):
     file = os.path.join(directory, file)
     os.rename(file, file.replace(Path(file).stem, ''.join([prefix, str(idx)])))
+
+
+def pick_random_color() -> Tuple:
+  """Randomly selects a color from `mle.constants.colors.py`"""
+  return random.choice(colors.COLOR_LIST)
