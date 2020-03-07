@@ -44,11 +44,11 @@ from mle.utils.opencv import disconnect, rescale
 while True:
   stream = cv2.VideoCapture(0)
   vzen_toast('MLE VZen', 'VZen service started.')
-  time.sleep(2.0)
+  # time.sleep(2.0)
   # Keep the service running.
   while stream.isOpened():
     _, frame = stream.read()
-    frame = rescale(frame, width=300)
+    frame = rescale(frame, width=500)
     detect_faces(frame)
     # Terminate the stream after pressing 'Esc' key.
     cv2.imshow('MLE VZen', frame)
