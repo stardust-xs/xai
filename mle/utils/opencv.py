@@ -18,8 +18,6 @@
 
 from typing import Optional, Tuple, Union
 
-# TODO(xames3): Remove suppressed pyright warnings.
-# pyright: reportMissingTypeStubs=false
 import cv2
 import numpy as np
 
@@ -105,7 +103,7 @@ def draw_label_box(frame: np.ndarray,
   # just above the bounding box.
   x3, y3 = x0, (y0 - 5)
   # Default label - confidence template.
-  label = f'{label} | {confidence}%'
+  label = f'{label} | {(round(confidence * 100, 2))}%'
   # If bounding box is at the left edge of the view, display the label
   # box at the left edge.
   if x3 < 0:
