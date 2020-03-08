@@ -49,7 +49,7 @@ PING_PORT = 80
 WEATHER_URL = 'https://api.darksky.net/forecast/'
 
 # Confidence scores
-DETECTED_FACE_CONFIDENCE = 0.7
+DETECTED_FACE_CONFIDENCE = 0.5
 DETECTED_TEXT_CONFIDENCE = 0.6
 
 # Train, Test and Validation splits percentages.
