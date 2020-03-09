@@ -51,6 +51,7 @@ WEATHER_URL = 'https://api.darksky.net/forecast/'
 # Confidence scores
 DETECTED_FACE_CONFIDENCE = 0.5
 DETECTED_TEXT_CONFIDENCE = 0.6
+DETECTED_XA_FACE_CONFIDENCE = 0.85
 
 # Train, Test and Validation splits percentages.
 SMALL_TRAIN_SPLIT = 0.3
