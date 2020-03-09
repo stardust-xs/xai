@@ -16,8 +16,7 @@
 # ======================================================================
 """Module to define project level parameters."""
 
-# NOTE: Please DO NOT change any of the values except for the 
-#       PROJECT_VERSION.
+# NOTE: Please DO NOT change anything except for the PROJECT_VERSION.
 
 # Name of the AI.
 AI_NAME = 'M.L.E'
@@ -40,7 +39,7 @@ PROJECT_LICENSE = 'Apache 2.0'
 # You can read about it here: https://semver.org/spec/v2.0.0.html
 # You need to update the project version for any critical change/fix
 # regularly.
-PROJECT_VERSION = '2.2'
+PROJECT_VERSION = '2.3'
 
 # Author(s) of this project.
 # If any new collaborator is added on GitHub, his/her name should be
