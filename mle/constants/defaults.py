@@ -57,5 +57,5 @@ DETECTED_XA_FACE_CONFIDENCE = 0.85
 SMALL_TRAIN_SPLIT = 0.3
 TEST_SPLIT = VALIDATION_SPLIT = 0.2
 
-# Face dataset image size required by VGG16 model.
+# Dataset image size required by VGG16 model.
 VGG_IMG_SIZE = [224, 224]
