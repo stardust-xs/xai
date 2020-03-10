@@ -11,3 +11,4 @@ imutils
 opencv-contrib-python
 keras
 matplotlib
+sklearn
