@@ -48,14 +48,34 @@ PING_PORT = 80
 # the below mentioned website is required.
 WEATHER_URL = 'https://api.darksky.net/forecast/'
 
-# Confidence scores
+# MLE's machine learning confidence scores.
+# These values are MLE's minimum threshold/confidence scores for making
+# a particular prediction. These scores factor in while making an
+# accurate prediction.
+# Minimum confidence score for determining if the made prediction is a
+# face or not.
 DETECTED_FACE_CONFIDENCE = 0.5
-DETECTED_TEXT_CONFIDENCE = 0.6
+# Minimum confidence score for determining if the predicted face is of
+# XA's or not.
+# NOTE: This value is subject to vary/exist depending on the accuracy.
 DETECTED_XA_FACE_CONFIDENCE = 0.85
 
-# Train, Test and Validation splits percentages.
-SMALL_TRAIN_SPLIT = 0.3
-TEST_SPLIT = VALIDATION_SPLIT = 0.2
+# Train, Test and Validation splits ratio.
+# These values decide how the complete dataset needs to be divided into
+# proportional parts. For instance, if you 2 directories dir_A & dir_B
+# and each directory holds 100 files then 70% (140 files cumulative of
+# both dir_A & dir_B) will be used as the input training data while 15%
+# (30 files) will be used for testing & validation purpose.
+# Training data split threshold.
+TRAIN_SPLIT = 0.7
+# Testing & Validation data split threshold.
+TEST_SPLIT = VALIDATION_SPLIT = 0.15
 
-# Dataset image size required by VGG16 model.
+# Image dataset target sizes.
+# These values represent a sequence of integers in which the image data
+# array needs to be resized into. Different image classification models
+# have different yet specific target sizes.
+# MLE model image data target size.
+MLE_IMG_SIZE = (220, 220)
+# VGG16 model image data target size.
 VGG_IMG_SIZE = [224, 224]
