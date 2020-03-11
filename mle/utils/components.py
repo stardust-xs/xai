@@ -20,45 +20,49 @@ import glob
 import os
 import shutil
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Tuple
 
-# TODO(xames3): Remove suppressed pyright warnings.
-# pyright: reportMissingTypeStubs=false
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from keras.callbacks.callbacks import History
+from keras.preprocessing.image import img_to_array as i2a
+from keras.preprocessing.image import load_img as li
+from sklearn.preprocessing import LabelEncoder
 
 from mle.constants import defaults
 from mle.utils import symlinks
-from mle.utils.common import now
-
-
-def training_session_date(timestamp_format: str = '%m%d%y') -> str:
-  """Returns date timestamp of model training."""
-  return str(now().strftime(timestamp_format))
+from mle.utils.common import timestamp
 
 
 def train_test_val_directories(directory: str,
                                session_name: str = None) -> List:
-  """Creates train, test and validation directories.
+  """Create train, test & validation directories.
 
-  Creates train, test and validation directories with respective name of
-  the directory and returns the list of created directories.
+  Create train, test and validation directories with respective name of
+  the directory and returns the list of created directories. The created
+  directories have either 'train', 'test' or 'validation' prefix
+  seperated by an underscore.
 
   Args:
-    directory: Directory whose train, test and validation directories
-               needs to be created.
+    directory: Directory which has all the files for the dataset.
     session_name: Name of the current training session.
 
   Returns:
-    List of created directories.
+    List of symlinks of created directories.
+
+  Note:
+    Please ensure you add remove the 'prefix + underscore' before
+    creating the classifying labels.
   """
-  session_name = session_name if session_name else training_session_date()
+  # If no session name is specified, create session using the date.
+  session_name = session_name if session_name else timestamp('%m%d%y')
+  # List of directories to create.
   dirs = ['train', 'test', 'validation']
   sym_dirs = [os.path.join(symlinks.train, session_name),
               os.path.join(symlinks.test, session_name),
               os.path.join(symlinks.validation, session_name)]
   new_dirs = []
+  # Create subdirectories within train, test & validation directories.
   for idx, sym_idx in zip(dirs, sym_dirs):
     dirname = os.path.join(sym_idx, ''.join([idx, '_', Path(directory).stem]))
     if not os.path.isdir(dirname):
@@ -69,18 +73,22 @@ def train_test_val_directories(directory: str,
 
 def create_train_test_val_split(directory: str,
                                 session_name: str = None,
-                                train_sample: Optional[int] = None) -> None:
-  """Creates train, test and validation split of the dataset.
+                                train_sample: int = None,
+                                unify_data: bool = False) -> None:
+  """Create train, test & validation split of a dataset.
 
-  Creates train, test and validation split of the dataset as per the
-  requirement. The default test and validation split is going to be 20%
-  of the train_sample.
+  Create train, test and validation split of a dataset as per the
+  requirement. The default test & validation split is going to be 15% of
+  the 'train_sample'.
+  If 'train_sample' is not provided, it'll create a dataset with 70% of
+  the actual training data.
 
   Args:
-    directory: Directory whose train, test and validation split needs to
-               be created.
+    directory: Directory which has all the files for the dataset.
     session_name: Name of the current training session.
     train_sample: Number (default: None) of training samples to use.
+    unify_data: Boolean (default: False) value to create a single train,
+                test & validation directories for all the classes
   """
   # You can find the reference code here:
   # https://towardsdatascience.com/a-comprehensive-hands-on-guide-to-transfer-learning-with-real-world-applications-in-deep-learning-212bf3b2f27a
@@ -88,89 +96,275 @@ def create_train_test_val_split(directory: str,
   # Using glob for getting all the files under ./<directory>/ directory.
   files = glob.glob(f'{directory}/*')
   all_files = [name for name in files if Path(directory).stem in name]
-  # If number of train_sample is not provided, it'll take 30% of all the
-  # available files.
+  # If number of 'train_sample' is not provided, it'll take 70% of all
+  # the available files.
   if train_sample is None:
-      train_sample = int(defaults.SMALL_TRAIN_SPLIT * len(all_files))
+      train_sample = int(defaults.TRAIN_SPLIT * len(all_files))
   # Creating an array of randomly chosen training files from all the
   # available files.
   train_files = np.random.choice(all_files, size=train_sample, replace=False)
-  # Removing the files that have been used for training purpose.
+  # Removing the files that have been already used for training purpose.
   all_files = list(set(all_files) - set(train_files))
-  # Creating an array of randomly chosen test files from all the
-  # available files excluding training files.
+  # Similarly, creating an array of randomly chosen test files from all
+  # the available files excluding training files.
   test_files = np.random.choice(all_files,
-                                size=int(defaults.TEST_SPLIT * train_sample),
+                                size=int(defaults.TEST_SPLIT * train_sample), 
                                 replace=False)
-  # Removing the files that have been used for testing purpose.
+  # Removing the files that have been already used for testing purpose.
   all_files = list(set(all_files) - set(test_files))
-  # Creating an array of randomly chosen validation files from all the
-  # available files excluding training files & test files.
-  val_files = np.random.choice(all_files,
-                                size=int(defaults.VALIDATION_SPLIT *
-                                        train_sample),
-                                replace=False)
-  # Creating train, test and validation directories.
-  train_dir, test_dir, validation_dir = train_test_val_directories(directory,
-                                                                   session_name)
-  # Copying files to their respective directory.
-  for file in train_files:
-    shutil.copy(file, train_dir)
-  for file in test_files:
-    shutil.copy(file, test_dir)
-  for file in val_files:
-    shutil.copy(file, validation_dir)
+  # Repeating the process of array creation by randomly choosing
+  # validation files from the available files excluding both  training &
+  # test files.
+  validation_files = np.random.choice(all_files,
+                                      size=int(defaults.VALIDATION_SPLIT *
+                                               train_sample),
+                                      replace=False)
+  # Individual file objects to copy in their respective directories.
+  files = [train_files, test_files, validation_files]
+  if unify_data:
+    # Creating train, test and validation directories under session name.
+    session_name = session_name if session_name else timestamp('%m%d%y')
+    sym_dirs = [os.path.join(symlinks.train, f'{session_name}/train'),
+                os.path.join(symlinks.test, f'{session_name}/test'),
+                os.path.join(symlinks.validation, f'{session_name}/validation')]
+    # Looping over all the files and copying them in their respective
+    # directories.
+    for idx, sym_idx in zip(files, sym_dirs):
+      if not os.path.isdir(sym_idx):
+        os.makedirs(sym_idx)
+      for file in idx:
+        shutil.copy(file, sym_idx)
+  else:
+    # Creating train, test & validation directories.
+    (train_dir,
+     test_dir,
+     validation_dir) = train_test_val_directories(directory, session_name)
+    sym_dirs = [train_dir, test_dir, validation_dir]
+    # Looping over all the files and copying them in their respective
+    # directories.
+    for idx, sym_idx in zip(files, sym_dirs):
+      for file in idx:
+        shutil.copy(file, sym_idx)
 
 
-def create_small_dataset(directory: str,
-                         session_name: str = None,
-                         train_sample: Optional[int] = None) -> None:
-  """Creates a smaller dataset.
+def create_dataset(directory: str,
+                   session_name: str = None,
+                   train_sample: int = None,
+                   unify_data: bool = False) -> None:
+  """Create dataset.
 
-  Creates a smaller dataset than the original for 'N' number of training
-  samples.
+  Create a dataset with 'N' number of training samples. The default
+  test & validation split is going to be 20% of the 'train_sample'.
+  If 'train_sample' is not provided, it'll create a dataset with 70% of
+  the actual training data.
 
   Args:
     directory: Directory to be used for creating small dataset.
     session_name: Name of the current training session.
     train_sample: Number (default: None) of training samples to use.
+    unify_data: Boolean (default: False) value to create a single train,
+                test & validation directories for all the classes
 
   Usage:
-    create_small_dataset('D:/mle/mle/data/raw/vzen', 'xa_2000', 2000)
+    create_dataset('D:/mle/mle/data/raw/vzen', 'xa_2000', 2000, False)
   """
+  # Symlink to all the files under training directory.
   all_files = glob.glob(f'{os.path.join(symlinks.train, directory)}/*')
-  # Loop to perform train, test and validation split for the mentioned
+  # Loop to perform train, test & validation split for the mentioned
   # directory.
   for idx in all_files:
-    create_train_test_val_split(idx, session_name, train_sample)
+    create_train_test_val_split(idx, session_name, train_sample, unify_data)
 
 
-def fit_generator_plot(history: History,
-                       parameter: str,
-                       session_name: str,
-                       show_plot: bool = False,
-                       save_plot: bool = True) -> None:
-  """Save and show history plot for 'fit_generator()'.
+def rename_image_classification_dataset(session_name: str) -> None:
+  """Rename image dataset with respective directory name.
 
-  Save and show history plot for selected parameter, accuracy or loss in
-  'fit_generator()'.
+  Rename images with respective directory name. This is required for
+  creating the classification labels.
 
   Args:
-    history: History object (dict) which stores stats of the trained
-             model.
-    parameter: History parameter, accuracy or loss.
     session_name: Name of the current training session.
+  """
+  # List of directories whose files need to be renamed.
+  dirs = ['train', 'test', 'validation']
+  sym_dirs = [os.path.join(symlinks.train, session_name),
+              os.path.join(symlinks.test, session_name),
+              os.path.join(symlinks.validation, session_name)]
+  # Looping through all the directories and renaming the files by
+  # prefixing the 'classification label'.
+  for idx, sym_idx in zip(dirs, sym_dirs):
+    for directory in glob.glob(f'{sym_idx}/*'):
+      for _idx, temp in enumerate(glob.glob(f'{directory}/*')):
+        extension = os.path.splitext(temp)[1]
+        name = (os.path.basename(directory)).split(f'{idx}_')[1]
+        file = os.path.join(directory, f'{name}.{_idx}{extension}')
+        os.rename(temp, file)
+
+
+def load_image_classification_dataset(session_name: str,
+                                      target_size: Tuple = defaults.MLE_IMG_SIZE
+                                      ) -> Tuple:
+  """Load an image classification dataset.
+
+  Load an image classification dataset before feeding it to the model.
+  This function returns an array of the train-validation images & their
+  respective labels required for classifying.
+
+  Args:
+    session_name: Name of the current training session.
+    target_size: Dimension (default: (220, 220)) to which the image
+                 array needs to be resized.
+
+  Returns:
+    Tuple of train-validation image array & train-validation labels.
+
+  Usage:
+    train_images.shape OR validation_images.shape
+    This should return a tuple something like this (1000, 220, 220, 3)
+    where,
+      1000: Total training samples.
+      220: Resized height of the training/validation sample.
+      220: Resized width of the training/validation sample.
+      3: 3 Channels i.e RGB (It is a colored image).
+  """
+  # The path to the actual training & validation directory where all
+  # training and validation data is stored.
+  train_dir = os.path.join(symlinks.train, session_name)
+  validation_dir = os.path.join(symlinks.validation, session_name)
+  # Looping through all the images in training directory, loading them &
+  # resizing the array to a 'target_size' and then converting the image
+  # data into a numpy array.
+  train_files = glob.glob(f'{train_dir}/train/*')
+  train_images = [i2a(li(image, target_size=target_size))
+                  for image in train_files]
+  train_images = np.array(train_images)
+  # Likewise, creating a numpy array of the validation data from the
+  # images in validation directory.
+  validation_files = glob.glob(f'{validation_dir}/validation/*')
+  validation_images = [i2a(li(image, target_size=target_size))
+                  for image in validation_files]
+  validation_images = np.array(validation_images)
+  # Returning tuple of numpy array of training & validation images.
+  return train_images, validation_images
+
+
+def scale_image_dataset(session_name: str,
+                        target_size: Tuple = defaults.MLE_IMG_SIZE) -> Tuple:
+  """Scale an image dataset array.
+
+  Scale an image dataset array's each pixel value between (0, 255) to
+  values between (0, 1). This step is very important since NN models
+  work well with smaller values.
+
+  Args:
+    session_name: Name of the current training session.
+    target_size: Dimension (default: (200, 200)) to which the images
+                 needs to be resized.
+
+  Returns:
+    Tuple of scaled train-validation image arrays.
+  """
+  # Using 'load_image_classification_dataset()' to create a numpy array
+  # of train-validation image data.
+  (train_images,
+   validation_images) = load_image_classification_dataset(session_name,
+                                                          target_size)
+  # Cast values of train-validation numpy arrays as a float value.
+  scaled_train_images = train_images.astype('float32')
+  scaled_validation_images = validation_images.astype('float32')
+  # Scale individual pixel value to range (0, 1).
+  scaled_train_images /= 255
+  scaled_validation_images /= 255
+  # Return scaled pixel values for both train & validation images..
+  return scaled_train_images, scaled_validation_images
+
+
+def create_image_classification_labels(session_name: str) -> Tuple:
+  """Encode image classification labels.
+
+  Encode image classification labels to numeric values. These values
+  represent the labels using an Integer. For instance, if you 2 classes
+  XA & Unknown; then XA would be encoded as 0 & Unknown would be encoded
+  as 1. If there were to be more classes, the number will increase.
+
+  Args:
+    session_name: Name of the current training session.
+
+  Returns:
+    Tuple of training & validation label encodings.
+  """
+  # The path to the actual training & validation directory where all
+  # training and validation data is stored.
+  train_dir = os.path.join(symlinks.train, session_name)
+  validation_dir = os.path.join(symlinks.validation, session_name)
+  train_files = glob.glob(f'{train_dir}/train/*')
+  validation_files = glob.glob(f'{validation_dir}/validation/*')
+  # Get train & validation labels from the name of that image. Since
+  # we presume that the classification dataset has images with labels
+  # as their filenames.
+  # For e.g: ./train/xa/xa.42069.png OR ./train/unknown/unknown.69.png.
+  train_labels = [label.split('\\')[1].split('.')[0].strip()
+                  for label in train_files]
+  validation_labels = [label.split('\\')[1].split('.')[0].strip()
+                       for label in validation_files]
+  # Encode labels using Sklearn's LabelEncoder().
+  label_encoder = LabelEncoder()
+  label_encoder.fit(train_labels)
+  return (label_encoder.transform(train_labels),
+          label_encoder.transform(validation_labels))
+
+
+def accuracy_vs_loss_plot(history: History,
+                          session_name: str,
+                          plot_title: str,
+                          epochs: int,
+                          show_plot: bool = False,
+                          save_plot: bool = True) -> None:
+  """Save and show Accuracy vs Loss plot.
+
+  Save and show an accuracy vs loss plot for a particular model.
+
+  Args:
+    history: History object (dict) which stores statistics of the
+             trained model.
+    session_name: Name of the current training session.
+    plot_title: Name/Title for the plot.
+    epochs: Number of times to train the model.
     show_plot: Boolean (default: False) value to display the plot.
     save_plot: Boolean (default: True) value to save the plot.
 
   Note:
-    The saved plots would be saved in ./stats/ directory with the
-    'session_name'.
+    The saved plots would be saved in ./stats/<session_name>/ directory
+    with the 'session_name'.
   """
-  plt.plot(history.history[parameter], label=f'training_{parameter}')
-  plt.plot(history.history[f'val_{parameter}'], label=f'validation_{parameter}')
-  plt.legend()
+  # Create directory to store the plots.
+  directory = os.path.join(symlinks.stats, session_name)
+  if not os.path.isdir(directory):
+    os.makedirs(directory)
+  # Create an instance of a plot with only 2 sublots, Accuracy & loss.
+  figure, (accuracy, loss) = plt.subplots(1, 2, figsize=(12, 4))
+  # Plot title.
+  figure.suptitle(plot_title, fontsize=12)
+  # Defining our range of epochs.
+  epoch_list = list(range(1, epochs + 1))
+  # Accuracy plot.
+  accuracy.plot(epoch_list, history.history['accuracy'], 
+                label=f'Training accuracy')
+  accuracy.plot(epoch_list, history.history['val_accuracy'],
+                label=f'Validation accuracy')
+  accuracy.set_xticks(np.arange(0, epochs + 1, 5))
+  accuracy.set_ylabel('Accuracy')
+  accuracy.set_xlabel('Epoch')
+  accuracy.set_title('Accuracy')
+  # Loss plot.
+  loss.plot(epoch_list, history.history['loss'], label=f'Training loss')
+  loss.plot(epoch_list, history.history['val_loss'], label=f'Validation loss')
+  loss.set_xticks(np.arange(0, epochs + 1, 5))
+  loss.set_ylabel('Loss')
+  loss.set_xlabel('Epoch')
+  loss.set_title('Loss')
+  # Options to save & display the plot.
   if save_plot:
-    plt.savefig(os.path.join(symlinks.stats, f'{session_name}_{parameter}'))
+    plt.savefig(os.path.join(directory, f'{session_name}'))
   if show_plot:
     plt.show()
