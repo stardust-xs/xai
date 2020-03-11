@@ -18,16 +18,12 @@
 
 import cProfile
 import io
-import os
 import pstats
 import random
 import socket
 from datetime import datetime
-from pathlib import Path
 from typing import Callable, List, Optional, Tuple, Union
 
-# TODO(xames3): Remove suppressed pyright warnings.
-# pyright: reportMissingTypeStubs=false
 from fuzzywuzzy import fuzz, process
 from win10toast import ToastNotifier
 
@@ -121,26 +117,11 @@ def profile(function: Callable) -> Callable:
   return inner
 
 
-def ordered_rename(directory: str, prefix: Optional[str] = None) -> None:
-  """Rename files in order possibly with an optional prefix.
-
-  Batch rename files in a directory with an optional prefix or just by
-  default numeric order.
-
-  Args:
-    directory: Directory path of the files to be renamed.
-    prefix: Optional (default: None) prefix for the renamed files.
-
-  Note:
-    Use this function when you need to batch rename files in an ordered
-    manner. This can be performed before starting the training process.
-  """
-  prefix = ''.join([prefix, '_']) if prefix else ''
-  for idx, file in enumerate(sorted(os.listdir(directory))):
-    file = os.path.join(directory, file)
-    os.rename(file, file.replace(Path(file).stem, ''.join([prefix, str(idx)])))
-
-
 def pick_random_color() -> Tuple:
   """Randomly selects a color from `mle.constants.colors.py`"""
   return random.choice(colors.COLOR_LIST)
+
+
+def timestamp(timestamp_format: str = '%d_%m_Y_%H_%M_%S') -> str:
+  """Returns string with current timestamp with a specified format."""
+  return now().strftime(timestamp_format)
