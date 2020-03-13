@@ -63,7 +63,7 @@ DETECTED_XA_FACE_CONFIDENCE = 0.85
 # Train, Test and Validation splits ratio.
 # These values decide how the complete dataset needs to be divided into
 # proportional parts. For instance, if you 2 directories dir_A & dir_B
-# and each directory holds 100 files then 70% (140 files cumulative of
+# and each directory holds 100 files; then 70% (140 files cumulative of
 # both dir_A & dir_B) will be used as the input training data while 15%
 # (30 files) will be used for testing & validation purpose.
 # Training data split threshold.
