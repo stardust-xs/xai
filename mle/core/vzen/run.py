@@ -33,8 +33,6 @@ their respective names.
 
 import time
 
-# TODO(xames3): Remove suppressed pyright warnings.
-# pyright: reportMissingTypeStubs=false
 import cv2
 
 from mle.core.vzen.subservices.face_detector import detect_faces
@@ -48,7 +46,7 @@ while True:
   # Keep the service running.
   while stream.isOpened():
     _, frame = stream.read()
-    frame = rescale(frame, width=500)
+    frame = rescale(frame, width=400)
     detect_faces(frame)
     # Terminate the stream after pressing 'Esc' key.
     cv2.imshow('MLE VZen', frame)
