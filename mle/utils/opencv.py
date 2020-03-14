@@ -72,13 +72,13 @@ def draw_label_box(frame: np.ndarray,
                    overlay: np.ndarray,
                    x0_y0: Tuple,
                    x1_y1: Tuple,
-                   label: str,
                    confidence: Union[float, int],
+                   label: str,
                    label_color: Tuple = colors.WHITE,
-                   color: Tuple = colors.BLACK,
-                   alpha: Union[float, int] = 0.3,
-                   alpha_color: Tuple = colors.BLACK,
-                   thickness: int = 1) -> None:
+                   label_box_color: Tuple = colors.BLACK,
+                   label_box_opacity: Union[float, int] = 0.3,
+                   label_box_thickness: int = 1,
+                   label_box_overlay_color: Tuple = colors.BLACK) -> None:
   """Draw box for labels relative to the bounding box.
 
   Draws a label box relative to the bounding box. This label box display
@@ -89,14 +89,20 @@ def draw_label_box(frame: np.ndarray,
     overlay: Copy of the image frame.
     x0_y0: Tuple of top left coordinates.
     x1_y1: Tuple of bottom right coordinates.
-    label: Label/Name of the detected object.
     confidence: Confidence score of the detection.
+    label: Label/Name of the detected object.
     label_color: Label color (default: white).
-    color: Bounding box (default: black) color.
-    alpha: Opacity of the detected region overlay.
-    alpha_color: Overlayed color (default: black).
-    thickness: Thickness (default: 1) of the bounding box.
+    label_box_color: Label box (default: black) color.
+    label_box_opacity: Opacity (default: 0.3) of the label box.
+    label_box_thickness: Thickness (default: 1) of the label box.
+    label_box_overlay_color: Overlayed color (default: black).
+
+  Note:
+    The label box is inspired by the Tesla Auto-pilot AI label box.
+    The label box stays relatively close to the detected bounding box.
   """
+  # You can find the reference label video here:
+  # https://www.youtube.com/watch?v=_1MHGUC_BzQ&list=LLDNJ8g4d0prqef0UNX8XkeQ
   # Unpacking tuples into 4 seperate points.
   (x0, y0), (_, y1) = x0_y0, x1_y1
   # Position of the label box by default. Start from the X - coordinate,
@@ -121,9 +127,11 @@ def draw_label_box(frame: np.ndarray,
   x4, y4 = int(x3), int(y3 - 25)
   x5, y5 = int(x3 + 20 + (len(label) * 7)), int(y3 - 1)
   # Adding an alpha bounding box, similar to draw_bounding_box().
-  cv2.rectangle(overlay, (x4, y4), (x5, y5), alpha_color, -1)
-  cv2.rectangle(frame, (x4, y4), (x5, y5), color, thickness)
-  cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+  cv2.rectangle(overlay, (x4, y4), (x5, y5), label_box_overlay_color, -1)
+  cv2.rectangle(frame, (x4, y4), (x5, y5),
+                label_box_color, label_box_thickness)
+  cv2.addWeighted(overlay, label_box_opacity, frame,
+                  1 - label_box_opacity, 0, frame)
   # Adding label & confidence score.
   cv2.putText(frame, label, (int(x3 + 10), int(y3 - 10)),
               cv2.FONT_HERSHEY_DUPLEX, 0.4, label_color)
@@ -132,13 +140,17 @@ def draw_label_box(frame: np.ndarray,
 def draw_bounding_box(frame: np.ndarray,
                       x0_y0: Tuple,
                       x1_y1: Tuple,
-                      label: str,
                       confidence: Union[float, int],
+                      label: str,
+                      bounding_box_color: Tuple = colors.RED,
+                      bounding_box_thickness: int = 2,
                       label_color: Tuple = colors.WHITE,
-                      color: Tuple = colors.RED,
-                      alpha: Union[float, int] = 0.2,
-                      alpha_color: Tuple = colors.RED,
-                      thickness: int = 2) -> None:
+                      label_box_color: Tuple = colors.BLACK,
+                      label_box_opacity: Union[float, int] = 0.3,
+                      label_box_thickness: int = 1,
+                      label_box_overlay_color: Tuple = colors.BLACK,
+                      bounding_box_opacity: Union[float, int] = 0.1,
+                      bounding_box_overlay_color: Tuple = colors.RED) -> None:
   """Draw bounding box using the Numpy tuple.
 
   Draws the bounding box around the detection using tuple of numpy
@@ -148,13 +160,18 @@ def draw_bounding_box(frame: np.ndarray,
     frame: Numpy array of the image frame.
     x0_y0: Tuple of top left coordinates.
     x1_y1: Tuple of bottom right coordinates.
-    label: Label/Name of the detected object.
     confidence: Confidence score of the detection.
+    label: Label/Name of the detected object.
     label_color: Label color (default: white).
-    color: Bounding box (default: red) color.
-    alpha: Opacity of the detected region overlay.
-    alpha_color: Overlayed color (default: red).
-    thickness: Thickness (default: 2) of the bounding box.
+    bounding_box_color: Bounding box (default: red) color.
+    bounding_box_thickness: Thickness (default: 2) of the bounding box.
+    label_color: Label color (default: white).
+    label_box_color: Label box (default: black) color.
+    label_box_opacity: Opacity (default: 0.3) of the label box.
+    label_box_thickness: Thickness (default: 1) of the label box.
+    label_box_overlay_color: Overlayed color (default: black).
+    bounding_box_opacity: Opacity (default: 0.1) of the detected region.
+    bounding_box_overlay_color: Overlayed color (default: red).
 
   Note:
     This method can be used for drawing the bounding boxes around
@@ -169,10 +186,13 @@ def draw_bounding_box(frame: np.ndarray,
   """
   # Transparent/Alpha overlay rectangle layer.
   overlay = frame.copy()
-  cv2.rectangle(overlay, x0_y0, x1_y1, alpha_color, -1)
+  cv2.rectangle(overlay, x0_y0, x1_y1, bounding_box_overlay_color, -1)
   # Main bounding box.
-  cv2.rectangle(frame, x0_y0, x1_y1, color, thickness)
-  cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+  cv2.rectangle(frame, x0_y0, x1_y1, bounding_box_color,
+                bounding_box_thickness)
+  cv2.addWeighted(overlay, bounding_box_opacity, frame,
+                  1 - bounding_box_opacity, 0, frame)
   # Draw label box relative to the bounding box.
-  draw_label_box(frame, overlay, x0_y0, x1_y1, label,
-                 confidence, label_color, colors.BLACK)
+  draw_label_box(frame, overlay, x0_y0, x1_y1, confidence, label, label_color,
+                 label_box_color, label_box_opacity, label_box_thickness,
+                 label_box_overlay_color)
