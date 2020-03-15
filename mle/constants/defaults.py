@@ -79,3 +79,8 @@ TEST_SPLIT = VALIDATION_SPLIT = 0.15
 MLE_IMG_SIZE = (220, 220)
 # VGG16 model image data target size.
 VGG_IMG_SIZE = [224, 224]
+
+# Image dataset input shape.
+# This shape represents height, width and the color channel of an image.
+# The width & height should be equal to image's 'target_size'.
+MLE_IMG_INPUT_SHAPE = (*MLE_IMG_SIZE, 3)
