@@ -28,6 +28,7 @@ from keras.callbacks.callbacks import History
 from keras.preprocessing.image import img_to_array as i2a
 from keras.preprocessing.image import load_img as li
 from sklearn.preprocessing import LabelEncoder
+from tqdm import tqdm
 
 from mle.constants import defaults
 from mle.utils import symlinks
@@ -116,8 +117,8 @@ def create_train_test_val_split(directory: str,
   # validation files from the available files excluding both  training &
   # test files.
   validation_files = np.random.choice(all_files,
-                                      size=int(defaults.VALIDATION_SPLIT *
-                                               train_sample),
+                                      size=int(defaults.VALIDATION_SPLIT
+                                               * train_sample),
                                       replace=False)
   # Individual file objects to copy in their respective directories.
   files = [train_files, test_files, validation_files]
@@ -130,10 +131,14 @@ def create_train_test_val_split(directory: str,
     # Looping over all the files and copying them in their respective
     # directories.
     for idx, sym_idx in zip(files, sym_dirs):
-      if not os.path.isdir(sym_idx):
-        os.makedirs(sym_idx)
-      for file in idx:
-        shutil.copy(file, sym_idx)
+      # Displaying progress bar for copying files into respective
+      # directories.
+      with tqdm(total=len(idx), desc='Copying', unit=' files') as progress_bar:
+        if not os.path.isdir(sym_idx):
+          os.makedirs(sym_idx)
+        for file in idx:
+          shutil.copy(file, sym_idx)
+          progress_bar.update(1)
   else:
     # Creating train, test & validation directories.
     (train_dir,
@@ -143,8 +148,12 @@ def create_train_test_val_split(directory: str,
     # Looping over all the files and copying them in their respective
     # directories.
     for idx, sym_idx in zip(files, sym_dirs):
-      for file in idx:
-        shutil.copy(file, sym_idx)
+      # Displaying progress bar for copying files into respective
+      # directories.
+      with tqdm(total=len(idx), desc='Copying', unit=' files') as progress_bar:
+        for file in idx:
+          shutil.copy(file, sym_idx)
+          progress_bar.update(1)
 
 
 def create_dataset(directory: str,
@@ -184,6 +193,10 @@ def rename_image_classification_dataset(session_name: str) -> None:
 
   Args:
     session_name: Name of the current training session.
+
+  Note:
+    This function will not work on the datasets created by setting
+    'unify_data' argument to True in create_dataset().
   """
   # List of directories whose files need to be renamed.
   dirs = ['train', 'test', 'validation']
@@ -231,20 +244,24 @@ def load_image_classification_dataset(session_name: str,
   # training and validation data is stored.
   train_dir = os.path.join(symlinks.train, session_name)
   validation_dir = os.path.join(symlinks.validation, session_name)
-  # Looping through all the images in training directory, loading them &
-  # resizing the array to a 'target_size' and then converting the image
-  # data into a numpy array.
+  # Creating list of training & validation symlinks.
   train_files = glob.glob(f'{train_dir}/train/*')
-  train_images = [i2a(li(image, target_size=target_size))
-                  for image in train_files]
-  train_images = np.array(train_images)
-  # Likewise, creating a numpy array of the validation data from the
-  # images in validation directory.
   validation_files = glob.glob(f'{validation_dir}/validation/*')
-  validation_images = [i2a(li(image, target_size=target_size))
-                  for image in validation_files]
-  validation_images = np.array(validation_images)
-  # Returning tuple of numpy array of training & validation images.
+  # Creating list of training & validation files.
+  files_list = [train_files, validation_files]
+  # Initializing empty lists to use it smartly in a for loop for images
+  # array.
+  train_images, validation_images = [], []
+  images_array = [train_images, validation_images]
+  # Looping through all the images in training & validation directory,
+  # loading them & resizing the array to a 'target_size' and then
+  # converting the image data.
+  for file, image in zip(files_list, images_array):
+    with tqdm(total=len(file), desc='Loading', unit=' files') as progress_bar:
+      for idx in file:
+        image.append(i2a(li(idx, target_size=target_size)))
+        progress_bar.update(1)
+  # Returning tuple of list of training & validation images.
   return train_images, validation_images
 
 
@@ -253,8 +270,9 @@ def scale_image_dataset(session_name: str,
   """Scale an image dataset array.
 
   Scale an image dataset array's each pixel value between (0, 255) to
-  values between (0, 1). This step is very important since NN models
-  work well with smaller values.
+  values between (0, 1).
+  This step is very important since NN models work well with smaller
+  values.
 
   Args:
     session_name: Name of the current training session.
@@ -264,11 +282,14 @@ def scale_image_dataset(session_name: str,
   Returns:
     Tuple of scaled train-validation image arrays.
   """
-  # Using 'load_image_classification_dataset()' to create a numpy array
-  # of train-validation image data.
+  # Using 'load_image_classification_dataset()' to create a list of
+  # train-validation image data.
   (train_images,
    validation_images) = load_image_classification_dataset(session_name,
                                                           target_size)
+  # Converting training-validation image data into numpy array.
+  train_images = np.array(train_images)
+  validation_images = np.array(validation_images)
   # Cast values of train-validation numpy arrays as a float value.
   scaled_train_images = train_images.astype('float32')
   scaled_validation_images = validation_images.astype('float32')
@@ -276,7 +297,7 @@ def scale_image_dataset(session_name: str,
   scaled_train_images /= 255
   scaled_validation_images /= 255
   # Return scaled pixel values for both train & validation images..
-  return scaled_train_images, scaled_validation_images
+  return scaled_train_images, scaled_validation_images, train_images, validation_images
 
 
 def create_image_classification_labels(session_name: str) -> Tuple:
@@ -297,16 +318,24 @@ def create_image_classification_labels(session_name: str) -> Tuple:
   # training and validation data is stored.
   train_dir = os.path.join(symlinks.train, session_name)
   validation_dir = os.path.join(symlinks.validation, session_name)
+  # Creating list of training & validation symlinks.
   train_files = glob.glob(f'{train_dir}/train/*')
   validation_files = glob.glob(f'{validation_dir}/validation/*')
+  # Creating list of training & validation files.
+  files_list = [train_files, validation_files]
+  # Initializing empty lists to use it smartly in a for loop for
+  # encoding labels.
+  train_labels, validation_labels = [], []
+  labels = [train_labels, validation_labels]
   # Get train & validation labels from the name of that image. Since
   # we presume that the classification dataset has images with labels
   # as their filenames.
   # For e.g: ./train/xa/xa.42069.png OR ./train/unknown/unknown.69.png.
-  train_labels = [label.split('\\')[1].split('.')[0].strip()
-                  for label in train_files]
-  validation_labels = [label.split('\\')[1].split('.')[0].strip()
-                       for label in validation_files]
+  for file, label in zip(files_list, labels):
+    with tqdm(total=len(file), desc='Encoding', unit=' files') as progress_bar:
+      for idx in file:
+        label.append(idx.split('\\')[1].split('.')[0].strip())
+        progress_bar.update(1)
   # Encode labels using Sklearn's LabelEncoder().
   label_encoder = LabelEncoder()
   label_encoder.fit(train_labels)
@@ -337,34 +366,36 @@ def accuracy_vs_loss_plot(history: History,
     The saved plots would be saved in ./stats/<session_name>/ directory
     with the 'session_name'.
   """
-  # Create directory to store the plots.
-  directory = os.path.join(symlinks.stats, session_name)
-  if not os.path.isdir(directory):
-    os.makedirs(directory)
-  # Create an instance of a plot with only 2 sublots, Accuracy & loss.
-  figure, (accuracy, loss) = plt.subplots(1, 2, figsize=(12, 4))
-  # Plot title.
-  figure.suptitle(plot_title, fontsize=12)
-  # Defining our range of epochs.
-  epoch_list = list(range(1, epochs + 1))
-  # Accuracy plot.
-  accuracy.plot(epoch_list, history.history['accuracy'], 
-                label=f'Training accuracy')
-  accuracy.plot(epoch_list, history.history['val_accuracy'],
-                label=f'Validation accuracy')
-  accuracy.set_xticks(np.arange(0, epochs + 1, 5))
-  accuracy.set_ylabel('Accuracy')
-  accuracy.set_xlabel('Epoch')
-  accuracy.set_title('Accuracy')
-  # Loss plot.
-  loss.plot(epoch_list, history.history['loss'], label=f'Training loss')
-  loss.plot(epoch_list, history.history['val_loss'], label=f'Validation loss')
-  loss.set_xticks(np.arange(0, epochs + 1, 5))
-  loss.set_ylabel('Loss')
-  loss.set_xlabel('Epoch')
-  loss.set_title('Loss')
-  # Options to save & display the plot.
-  if save_plot:
-    plt.savefig(os.path.join(directory, f'{session_name}'))
-  if show_plot:
-    plt.show()
+  # Skip further execution if number of epochs is 1.
+  if epochs > 1:
+    # Create directory to store the plots.
+    directory = os.path.join(symlinks.stats, session_name)
+    if not os.path.isdir(directory):
+      os.makedirs(directory)
+    # Create an instance of a plot with only 2 sublots, Accuracy & loss.
+    figure, (accuracy, loss) = plt.subplots(1, 2, figsize=(12, 4))
+    # Plot title.
+    figure.suptitle(plot_title, fontsize=12)
+    # Defining our range of epochs.
+    epoch_list = list(range(1, epochs + 1))
+    # Accuracy plot.
+    accuracy.plot(epoch_list, history.history['accuracy'], 
+                  label=f'Training accuracy')
+    accuracy.plot(epoch_list, history.history['val_accuracy'],
+                  label=f'Validation accuracy')
+    accuracy.set_xticks(np.arange(0, epochs + 1, 5))
+    accuracy.set_ylabel('Accuracy')
+    accuracy.set_xlabel('Epoch')
+    accuracy.set_title('Accuracy')
+    # Loss plot.
+    loss.plot(epoch_list, history.history['loss'], label=f'Training loss')
+    loss.plot(epoch_list, history.history['val_loss'], label=f'Validation loss')
+    loss.set_xticks(np.arange(0, epochs + 1, 5))
+    loss.set_ylabel('Loss')
+    loss.set_xlabel('Epoch')
+    loss.set_title('Loss')
+    # Options to save & display the plot.
+    if save_plot:
+      plt.savefig(os.path.join(directory, f'{session_name}'))
+    if show_plot:
+      plt.show()
