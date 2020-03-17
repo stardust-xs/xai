@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # ======================================================================
-"""Utility for using the ML components easily & natively."""
+"""Utility for using the machine learning components natively."""
 
 import glob
 import os
@@ -220,8 +220,8 @@ def load_image_classification_dataset(session_name: str,
   """Load an image classification dataset.
 
   Load an image classification dataset before feeding it to the model.
-  This function returns an array of the train-validation images & their
-  respective labels required for classifying.
+  This function returns a list of array of the train-validation of
+  images for both train-validation images.
 
   Args:
     session_name: Name of the current training session.
@@ -229,16 +229,7 @@ def load_image_classification_dataset(session_name: str,
                  array needs to be resized.
 
   Returns:
-    Tuple of train-validation image array & train-validation labels.
-
-  Usage:
-    train_images.shape OR validation_images.shape
-    This should return a tuple something like this (1000, 220, 220, 3)
-    where,
-      1000: Total training samples.
-      220: Resized height of the training/validation sample.
-      220: Resized width of the training/validation sample.
-      3: 3 Channels i.e RGB (It is a colored image).
+    Tuple of train-validation image array lists.
   """
   # The path to the actual training & validation directory where all
   # training and validation data is stored.
