@@ -1,5 +1,4 @@
 {
-    "breadcrumbs.enabled": false,
     "code-runner.executorMap": {
         "python": "$pythonPath -u $fullFileName"
     },
@@ -21,11 +20,6 @@
     "editor.trimAutoWhitespace": true,
     "editor.minimap.enabled": false,
     "editor.wordWrap": "off",
-    "explorer.confirmDelete": false,
-    "explorer.confirmDragAndDrop": false,
-    "explorer.openEditors.visible": 0,
-    "explorer.sortOrder": "type",
-    "files.autoSave": "afterDelay",
     "files.trimFinalNewlines": true,
     "files.exclude": {
         "**/.git": true,
@@ -38,6 +32,11 @@
         "**/*.egg-info": true,
     },
     "git.autofetch": true,
+    "markdownlint.config": {
+        "default": true,
+        "MD033": false,
+        "MD041": false,
+        },
     "python.formatting.provider": "autopep8",
     "python.jediEnabled": true,
     "python.linting.enabled": true,
@@ -46,19 +45,10 @@
         "--generate-members"
     ],
     "python.pythonPath": "venv\\Scripts\\python.exe",
-    "telemetry.enableTelemetry": false,
-    "terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",
-    "workbench.colorCustomizations": {
-        "scrollbar.shadow": "#ffffff00",
-        "tree.indentGuidesStroke": "#008070",
-        "widget.shadow": "#ffffff00",
+    "[markdown]": {
+        "editor.quickSuggestions": false,
+        "editor.insertSpaces": false,
     },
-    "workbench.editor.highlightModifiedTabs": true,
-    "workbench.startupEditor": "newUntitledFile",
-    "workbench.settings.editor": "json",
-    "workbench.iconTheme": "material-icon-theme",
-    "workbench.colorTheme": "One Monokai",
-    "workbench.tree.indent": 20,
     "[plaintext]": {
         "editor.quickSuggestions": false,
     },
