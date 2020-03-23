@@ -133,6 +133,7 @@ mle/data/train/
 mle/data/validation/
 
 # Ignored on-device files
+mle/logs/*.log
 mle/models/res10_300x300_ssd_iter_140000.caffemodel
 mle/models/deploy.prototxt.txt
 mle/models/facial_landmarks.dat
