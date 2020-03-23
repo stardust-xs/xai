@@ -26,6 +26,7 @@ parent = os.path.dirname(os.path.dirname(__file__))
 # Subsequent symlinks.
 data = os.path.join(parent, 'data')
 files = os.path.join(parent, 'files')
+logs = os.path.join(parent, 'logs')
 models = os.path.join(parent, 'models')
 stats = os.path.join(parent, 'stats')
 
@@ -42,7 +43,6 @@ vzen = os.path.join(raw, 'vzen')
 # Symlinks to save all data for training purposes.
 usage = os.path.join(monitor, 'usage')
 weather = os.path.join(monitor, 'weather')
-train_faces = os.path.join(vzen, 'train_faces')
 
 # Symlinks to all models related to OpenCV.
 caffemodel = os.path.join(models, _models.FACE_CAFFEMODEL)
