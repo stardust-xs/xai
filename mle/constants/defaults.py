@@ -21,6 +21,17 @@
 # be used if required.
 DEF_CHARSET = 'utf-8'
 
+# MLE Refresh delay.
+# Duration (in secs.) after which MLE refreshes her memory. Lower sleep
+# duration provides more granular results. Sleeping after every 1 second
+# doesn't affect performance by any means.
+REFRESH_TIMER = 1.0
+
+# Critical exception sleep time.
+# Duration (in secs.) MLE should wait/sleep before restarting the
+# service in a while loop.
+EXCEPTION_TIMER = 30.0 
+
 # Monitoring limit timestamp for the day. 
 # Any monitored activities after this limit will log the entries into a
 # new file.
@@ -47,6 +58,10 @@ PING_PORT = 80
 # Please note that for making any API request, an account (free/paid) on
 # the below mentioned website is required.
 WEATHER_URL = 'https://api.darksky.net/forecast/'
+
+# Weather API check timer.
+# Duration (in mins.) after which MLE makes an API call for the weather.
+WEATHER_CHECK_TIMER = 30.0
 
 # MLE's machine learning confidence scores.
 # These values are MLE's minimum threshold/confidence scores for making
