@@ -142,13 +142,13 @@ def draw_bounding_box(frame: np.ndarray,
                       x1_y1: Tuple,
                       confidence: Union[float, int],
                       label: str,
-                      bounding_box_color: Tuple = colors.RED,
-                      bounding_box_thickness: int = 2,
                       label_color: Tuple = colors.WHITE,
                       label_box_color: Tuple = colors.BLACK,
                       label_box_opacity: Union[float, int] = 0.3,
                       label_box_thickness: int = 1,
                       label_box_overlay_color: Tuple = colors.BLACK,
+                      bounding_box_color: Tuple = colors.RED,
+                      bounding_box_thickness: int = 2,
                       bounding_box_opacity: Union[float, int] = 0.1,
                       bounding_box_overlay_color: Tuple = colors.RED) -> None:
   """Draw bounding box using the Numpy tuple.
@@ -163,13 +163,12 @@ def draw_bounding_box(frame: np.ndarray,
     confidence: Confidence score of the detection.
     label: Label/Name of the detected object.
     label_color: Label color (default: white).
-    bounding_box_color: Bounding box (default: red) color.
-    bounding_box_thickness: Thickness (default: 2) of the bounding box.
-    label_color: Label color (default: white).
     label_box_color: Label box (default: black) color.
     label_box_opacity: Opacity (default: 0.3) of the label box.
     label_box_thickness: Thickness (default: 1) of the label box.
     label_box_overlay_color: Overlayed color (default: black).
+    bounding_box_color: Bounding box (default: red) color.
+    bounding_box_thickness: Thickness (default: 2) of the bounding box.
     bounding_box_opacity: Opacity (default: 0.1) of the detected region.
     bounding_box_overlay_color: Overlayed color (default: red).
 
@@ -196,3 +195,63 @@ def draw_bounding_box(frame: np.ndarray,
   draw_label_box(frame, overlay, x0_y0, x1_y1, confidence, label, label_color,
                  label_box_color, label_box_opacity, label_box_thickness,
                  label_box_overlay_color)
+
+
+def draw_information_box(frame: np.ndarray,
+                         label: str,
+                         value: Union[float, int, str],
+                         x0_y0: Tuple = (5, 35),
+                         label_color: Tuple = colors.WHITE,
+                         label_box_color: Tuple = colors.BLACK,
+                         label_box_opacity: Union[float, int] = 0.3,
+                         label_box_thickness: int = 1,
+                         label_box_overlay_color: Tuple = colors.BLACK) -> None:
+  """Draw box for displaying some information with respective value.
+
+  Draws an information box at particular point. This information box
+  displays some information with a label & it's respective value.
+
+  Args:
+    frame: Numpy array of the image frame.
+    label: Label to be put on.
+    value: Value to be displayed for the label.
+    x0_y0: Tuple (default: 5, 35; [Top left]) of coordinates.
+    label_color: Label color (default: white).
+    label_box_color: Label box (default: black) color.
+    label_box_opacity: Opacity (default: 0.3) of the label box.
+    label_box_thickness: Thickness (default: 1) of the label box.
+    label_box_overlay_color: Overlayed color (default: black).
+
+  Note:
+    Overusing/Multiple usage of this function may slow down the
+    performace considering 'value' is calculated every single time a
+    frame is read.
+
+  Usage:
+    * For displaying FPS.
+        fps = round((frame_number / (now() - start).seconds), 2)
+        draw_info_box(frame, 'FPS', fps, (5, 270))
+    * For displaying elapsed time since running MLE VZen service.
+        elapsed_time = seconds_to_datetime((now() - start).seconds)
+        draw_info_box(frame, 'Elapsed', elapsed_time, (5, 300))
+  """
+  # Transparent/Alpha overlay rectangle layer.
+  overlay = frame.copy()
+  x0, y0 = x0_y0
+  # Position of the information box.
+  x1, y1 = x0, (y0 - 5)
+  # Default information template.
+  label = f'{label} | {value}'
+  # NOTE: These adjustments are subjective and may vary in future.
+  x2, y2 = x1, (y1 - 25)
+  x3, y3 = int(x1 + 20 + (len(label) * 7)), int(y1 - 1)
+  # Adding an alpha label box, similar to all the bounding boxes MLE
+  # supports.
+  cv2.rectangle(overlay, (x2, y2), (x3, y3), label_box_overlay_color, -1)
+  cv2.rectangle(frame, (x2, y2), (x3, y3),
+                label_box_color, label_box_thickness)
+  cv2.addWeighted(overlay, label_box_opacity, frame,
+                  1 - label_box_opacity, 0, frame)
+  # Adding information label text.
+  cv2.putText(frame, label, (int(x1 + 10), int(y1 - 10)),
+              cv2.FONT_HERSHEY_DUPLEX, 0.4, label_color)
