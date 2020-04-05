@@ -28,6 +28,7 @@ data = os.path.join(parent, 'data')
 files = os.path.join(parent, 'files')
 logs = os.path.join(parent, 'logs')
 models = os.path.join(parent, 'models')
+resources = os.path.join(parent, 'resources')
 stats = os.path.join(parent, 'stats')
 
 # Child symlinks.
@@ -47,6 +48,10 @@ weather = os.path.join(monitor, 'weather')
 # Symlinks to all models related to OpenCV.
 caffemodel = os.path.join(models, _models.FACE_CAFFEMODEL)
 prototext = os.path.join(models, _models.FACE_PROTOTEXT)
-face_landmarks = os.path.join(models, _models.FACE_LANDMARKS)
+face_landmarks_5_pts = os.path.join(models, _models.FACE_LANDMARKS_5_POINTS)
+face_landmarks_68_pts = os.path.join(models, _models.FACE_LANDMARKS_68_POINTS)
 east_text_detector = os.path.join(models, _models.EAST_TEXT_DETECTOR)
 xa_face_detector = os.path.join(models, _models.XA_FACE_FEATURES_DETECTOR)
+
+# Symlinks to all resources.
+arame = os.path.join(resources, 'arame.ttf')
