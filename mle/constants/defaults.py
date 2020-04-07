@@ -75,7 +75,7 @@ BUFFER_FRAME_THRESHOLD = 120
 # accurate prediction.
 # Minimum confidence score for determining if the made prediction is a
 # face or not.
-DETECTED_FACE_CONFIDENCE = 0.3
+DETECTED_FACE_CONFIDENCE = 0.4
 # Minimum confidence score for determining if the predicted face is of
 # XA's or not.
 # NOTE: This value is subject to vary/exist depending on the accuracy.
