@@ -16,7 +16,7 @@
 # ======================================================================
 """Utility for making convenient use of OpenCV."""
 
-from typing import Optional, Tuple, Union
+from typing import Tuple
 
 import cv2
 import numpy as np
@@ -25,9 +25,9 @@ from mle.constants import colors
 
 
 def rescale(frame: np.ndarray,
-            width: Optional[int] = None,
-            height: Optional[int] = None,
-            interpolation: Optional[object] = cv2.INTER_AREA) -> np.ndarray:
+            width: int = None,
+            height: int = None,
+            interpolation: int = cv2.INTER_AREA) -> np.ndarray:
   """Rescale the frame.
 
   Rescale the stream to a desirable size. This is required before
@@ -45,7 +45,7 @@ def rescale(frame: np.ndarray,
   """
   try:
     dimensions = None
-    frame_height, frame_width = frame.shape[:2]
+    frame_height, frame_width, _ = frame.shape
     # If both width & height are None, then return the original frame.
     if width is None and height is None:
       return frame
@@ -68,21 +68,18 @@ def disconnect(stream: np.ndarray) -> None:
   cv2.destroyAllWindows()
 
 
-def draw_label_box(frame: np.ndarray,
-                   overlay: np.ndarray,
-                   x0_y0: Tuple,
-                   x1_y1: Tuple,
-                   confidence: Union[float, int],
-                   label: str,
-                   label_color: Tuple = colors.WHITE,
-                   label_box_color: Tuple = colors.BLACK,
-                   label_box_opacity: Union[float, int] = 0.3,
-                   label_box_thickness: int = 1,
-                   label_box_overlay_color: Tuple = colors.BLACK) -> None:
-  """Draw box for labels relative to the bounding box.
+def draw_description_box(frame: np.ndarray,
+                         x0_y0: Tuple,
+                         x1_y1: Tuple,
+                         description: str,
+                         description_text_color: Tuple = colors.WHITE,
+                         description_box_color: Tuple = colors.BLACK,
+                         description_box_opacity: float = 0.3,
+                         description_box_thickness: int = 1) -> None:
+  """Draw box for adding description for the detection.
 
-  Draws a label box relative to the bounding box. This label box display
-  label/name & the confidence score of the detected object.
+  Draw a description box relative to the bounding box. This box displays
+  label/name, confidence score, etc. of the detected object.
 
   Args:
     frame: Numpy array of the image frame.
@@ -90,168 +87,130 @@ def draw_label_box(frame: np.ndarray,
     x0_y0: Tuple of top left coordinates.
     x1_y1: Tuple of bottom right coordinates.
     confidence: Confidence score of the detection.
-    label: Label/Name of the detected object.
-    label_color: Label color (default: white).
-    label_box_color: Label box (default: black) color.
-    label_box_opacity: Opacity (default: 0.3) of the label box.
-    label_box_thickness: Thickness (default: 1) of the label box.
-    label_box_overlay_color: Overlayed color (default: black).
+    description: Description of the detected object.
+    description_text_color: Description text color (default: white).
+    description_box_color: Description box (default: black) color.
+    description_box_opacity: Opacity (default: 0.3) of the description
+                             box.
+    description_box_thickness: Thickness (default: 1) of the description
+                               box.
 
   Note:
-    The label box is inspired by the Tesla Auto-pilot AI label box.
-    The label box stays relatively close to the detected bounding box.
+    The description box is inspired by the Tesla Auto-pilot AI
+    description box. It stays relatively close to the bounding box and
+    switches it's position relative to the motion.
   """
   # You can find the reference label video here:
   # https://www.youtube.com/watch?v=_1MHGUC_BzQ&list=LLDNJ8g4d0prqef0UNX8XkeQ
   # Unpacking tuples into 4 seperate points.
   (x0, y0), (_, y1) = x0_y0, x1_y1
-  # Position of the label box by default. Start from the X - coordinate,
-  # just above the bounding box.
-  x3, y3 = x0, (y0 - 5)
-  # Default label - confidence template.
-  label = f'{label} | {(round(confidence * 100, 2))}%'
-  # If bounding box is at the left edge of the view, display the label
-  # box at the left edge.
+  # Position of the description box by default. Start from the
+  # X - coordinate, just above the bounding box.
+  break_count = description.count('\n')
+  x_bias = max([idx for idx in description.split('\n')], key=lambda x: len(x))
+  x3, y3 = x0, (y0 - (5 + break_count * 20))
+  # If bounding box is at the left edge of the view, display the
+  # description box at the left edge.
   if x3 < 0:
     x3 = 0
-  # If bounding box is at the right edge of the view, display the label
-  # box at the right edge by considering the label as well.
-  elif (x3 + 10 + (len(label) * 7) > frame.shape[1]):
-    x3 = x3 - (x3 + 10 + len(label) * 7 - (frame.shape[1])) - 10
-  # If the bounding box is high up towards the top, display the label
-  # box at the bottom of bounding box.
-  if y3 < 0:
+  # If bounding box is at the right edge of the view, display the
+  # description box at the right edge by considering the description in
+  # it.
+  elif (x3 + 10 + (len(x_bias) * 7) > frame.shape[1]):
+    x3 = x3 - (x3 + 10 + len(x_bias) * 7 - (frame.shape[1])) - 10
+  # If the bounding box is high up towards the top, display th
+  # description box at the bottom of bounding box.
+  if y3 < 30:
     y3 = y1 + 30
   # Initializing new coordinates with adjustments.
   # NOTE: These adjustments are subjective and may vary in future.
   x4, y4 = int(x3), int(y3 - 25)
-  x5, y5 = int(x3 + 20 + (len(label) * 7)), int(y3 - 1)
+  x5, y5 = int(x3 + 17 + (len(x_bias) * 7)), int((y3 + break_count * 20) - 1)
   # Adding an alpha bounding box, similar to draw_bounding_box().
-  cv2.rectangle(overlay, (x4, y4), (x5, y5), label_box_overlay_color, -1)
+  overlay = frame.copy()
+  cv2.rectangle(overlay, (x4, y4), (x5, y5), description_box_color, -1)
   cv2.rectangle(frame, (x4, y4), (x5, y5),
-                label_box_color, label_box_thickness)
-  cv2.addWeighted(overlay, label_box_opacity, frame,
-                  1 - label_box_opacity, 0, frame)
-  # Adding label & confidence score.
-  cv2.putText(frame, label, (int(x3 + 10), int(y3 - 10)),
-              cv2.FONT_HERSHEY_DUPLEX, 0.4, label_color)
+                description_box_color, description_box_thickness)
+  cv2.addWeighted(overlay, description_box_opacity, frame,
+                  1 - description_box_opacity, 0, frame)
+  # Adding description.
+  for idx in description.split('\n'):
+    cv2.putText(frame, idx, (int(x3 + 7), int(y3 - 10)),
+                cv2.FONT_HERSHEY_DUPLEX, 0.4, description_text_color)
+    y3 = y3 + 20
 
 
 def draw_bounding_box(frame: np.ndarray,
                       x0_y0: Tuple,
                       x1_y1: Tuple,
-                      confidence: Union[float, int],
-                      label: str,
-                      label_color: Tuple = colors.WHITE,
-                      label_box_color: Tuple = colors.BLACK,
-                      label_box_opacity: Union[float, int] = 0.3,
-                      label_box_thickness: int = 1,
-                      label_box_overlay_color: Tuple = colors.BLACK,
+                      description: str,
+                      description_text_color: Tuple = colors.WHITE,
+                      description_box_color: Tuple = colors.BLACK,
+                      description_box_opacity: float = 0.3,
+                      description_box_thickness: int = 1,
                       bounding_box_color: Tuple = colors.RED,
-                      bounding_box_thickness: int = 2,
-                      bounding_box_opacity: Union[float, int] = 0.1,
-                      bounding_box_overlay_color: Tuple = colors.RED) -> None:
-  """Draw bounding box using the Numpy tuple.
+                      bounding_box_opacity: float = 0.3,
+                      bounding_box_thickness: int = 2) -> None:
+  """Draw bounding box.
 
-  Draws the bounding box around the detection using tuple of numpy
-  coordinates.
+  Draws the bounding box around the detection using its coordinates.
 
   Args:
     frame: Numpy array of the image frame.
     x0_y0: Tuple of top left coordinates.
     x1_y1: Tuple of bottom right coordinates.
-    confidence: Confidence score of the detection.
-    label: Label/Name of the detected object.
-    label_color: Label color (default: white).
-    label_box_color: Label box (default: black) color.
-    label_box_opacity: Opacity (default: 0.3) of the label box.
-    label_box_thickness: Thickness (default: 1) of the label box.
-    label_box_overlay_color: Overlayed color (default: black).
+    description: Description of the detected object.
+    description_text_color: Description text color (default: white).
+    description_box_color: Description box (default: black) color.
+    description_box_opacity: Opacity (default: 0.3) of the description
+                             box.
+    description_box_thickness: Thickness (default: 1) of the description
+                               box.
     bounding_box_color: Bounding box (default: red) color.
+    bounding_box_opacity: Opacity (default: 0.3) of the detected region.
     bounding_box_thickness: Thickness (default: 2) of the bounding box.
-    bounding_box_opacity: Opacity (default: 0.1) of the detected region.
-    bounding_box_overlay_color: Overlayed color (default: red).
 
   Note:
-    This method can be used for drawing the bounding boxes around
-    objects whose coordinates are derived from a ML based models.
-
-  Usage:
-    * For Haar based detections, use the below settings -
-        draw_bounding_box(frame, x0, y0, (x1 - x0), (y1 - y0))
-    * For adding the detection name, add the below settings - 
-        (x0, y0), (x1, y1) = x0_y0, x1_y1
-        cv2.rectangle(frame, (x0, y1), (x1, y1 + 20), color, -1)
+    For Haar based detections, modify the x1_y1 tuple like below:
+    draw_bounding_box(frame, x0, y0, (x1 - x0), (y1 - y0), 'XAMES3')
   """
-  # Transparent/Alpha overlay rectangle layer.
   overlay = frame.copy()
-  cv2.rectangle(overlay, x0_y0, x1_y1, bounding_box_overlay_color, -1)
-  # Main bounding box.
+  cv2.rectangle(overlay, x0_y0, x1_y1, bounding_box_color, -1)
+  # Main bounding box for the detection.
   cv2.rectangle(frame, x0_y0, x1_y1, bounding_box_color,
                 bounding_box_thickness)
+  # Add transparent/alpha overlay on the frame.
   cv2.addWeighted(overlay, bounding_box_opacity, frame,
                   1 - bounding_box_opacity, 0, frame)
-  # Draw label box relative to the bounding box.
-  draw_label_box(frame, overlay, x0_y0, x1_y1, confidence, label, label_color,
-                 label_box_color, label_box_opacity, label_box_thickness,
-                 label_box_overlay_color)
+  # Draw description box relative to the bounding box.
+  draw_description_box(frame, x0_y0, x1_y1, description,
+                       description_text_color, description_box_color,
+                       description_box_opacity, description_box_thickness)
 
 
-def draw_information_box(frame: np.ndarray,
-                         label: str,
-                         value: Union[float, int, str],
-                         x0_y0: Tuple = (5, 35),
-                         label_color: Tuple = colors.WHITE,
-                         label_box_color: Tuple = colors.BLACK,
-                         label_box_opacity: Union[float, int] = 0.3,
-                         label_box_thickness: int = 1,
-                         label_box_overlay_color: Tuple = colors.BLACK) -> None:
-  """Draw box for displaying some information with respective value.
+def draw_statistics_box(frame: np.ndarray,
+                        description: str,
+                        x0_y0: Tuple,
+                        description_text_color: Tuple = colors.WHITE,
+                        description_box_color: Tuple = colors.BLACK,
+                        description_box_opacity: float = 0.3,
+                        description_box_thickness: int = 1) -> None:
+  """Draw box for displaying statisticse.
 
-  Draws an information box at particular point. This information box
-  displays some information with a label & it's respective value.
+  Draws box for displaying statistics box at particular point. 
 
   Args:
     frame: Numpy array of the image frame.
-    label: Label to be put on.
-    value: Value to be displayed for the label.
-    x0_y0: Tuple (default: 5, 35; [Top left]) of coordinates.
-    label_color: Label color (default: white).
-    label_box_color: Label box (default: black) color.
-    label_box_opacity: Opacity (default: 0.3) of the label box.
-    label_box_thickness: Thickness (default: 1) of the label box.
-    label_box_overlay_color: Overlayed color (default: black).
-
-  Note:
-    Overusing/Multiple usage of this function may slow down the
-    performace considering 'value' is calculated every single time a
-    frame is read.
-
-  Usage:
-    * For displaying FPS.
-        fps = round((frame_number / (now() - start).seconds), 2)
-        draw_info_box(frame, 'FPS', fps, (5, 270))
-    * For displaying elapsed time since running MLE VZen service.
-        elapsed_time = seconds_to_datetime((now() - start).seconds)
-        draw_info_box(frame, 'Elapsed', elapsed_time, (5, 300))
+    description: Description/Statistics to be displayed
+    x0_y0: Tuple of top left coordinates.
+    description_text_color: Description text color (default: white).
+    description_box_color: Description box (default: black) color.
+    description_box_opacity: Opacity (default: 0.3) of the description
+                             box.
+    description_box_thickness: Thickness (default: 1) of the description
+                               box.
   """
-  # Transparent/Alpha overlay rectangle layer.
-  overlay = frame.copy()
-  x0, y0 = x0_y0
-  # Position of the information box.
-  x1, y1 = x0, (y0 - 5)
   # Default information template.
-  label = f'{label} | {value}'
-  # NOTE: These adjustments are subjective and may vary in future.
-  x2, y2 = x1, (y1 - 25)
-  x3, y3 = int(x1 + 20 + (len(label) * 7)), int(y1 - 1)
-  # Adding an alpha label box, similar to all the bounding boxes MLE
-  # supports.
-  cv2.rectangle(overlay, (x2, y2), (x3, y3), label_box_overlay_color, -1)
-  cv2.rectangle(frame, (x2, y2), (x3, y3),
-                label_box_color, label_box_thickness)
-  cv2.addWeighted(overlay, label_box_opacity, frame,
-                  1 - label_box_opacity, 0, frame)
-  # Adding information label text.
-  cv2.putText(frame, label, (int(x1 + 10), int(y1 - 10)),
-              cv2.FONT_HERSHEY_DUPLEX, 0.4, label_color)
+  draw_description_box(frame, x0_y0, (x0_y0[0], (x0_y0[1] - 5)), description,
+                       description_text_color, description_box_color,
+                       description_box_opacity, description_box_thickness)
