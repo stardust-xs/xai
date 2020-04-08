@@ -16,107 +16,136 @@
 # ======================================================================
 """A subservice for face detection and recognition."""
 
-from typing import Tuple, Union
+from typing import Tuple
 
 import cv2
 import numpy as np
-from imutils import face_utils
 
-from dlib import get_frontal_face_detector, shape_predictor
-from mle.constants import colors, defaults
-from mle.utils import symlinks
-from mle.utils.opencv import draw_bounding_box, rescale
+from dlib import rectangle, shape_predictor
+from mle.constants import colors, defaults, models
+from mle.utils.opencv import draw_bounding_box
+
+
+def convert_to_numpy(face_predictor: shape_predictor) -> np.ndarray:
+  """Converts the DLib's shape predictor object to a numpy array.
+
+  Converts the facial landmarks shape predictor to a Numpy array.
+
+  Args:
+    face_predictor: DLib's shape predictor object with facial landmarks.
+  """
+  # You can find the reference code here:
+  # https://github.com/qhan1028/Headpose-Detection/blob/5465c1bff0eb68524dfe82608be9aad4aade84e3/headpose.py#L75
+  shape_coords = []
+  for idx in models.LANDMARKS_2D_INDEX_LIST[1]:
+    shape_coords += [[face_predictor.part(idx).x, face_predictor.part(idx).y]]
+  return (np.array(shape_coords).astype(np.int)).astype(np.double)
+
+
+def calculate_facial_orientation_angles(frame: np.ndarray,
+                                        face_landmarks: np.ndarray) -> Tuple:
+  """Calculate orientation of the face with respect to the camera.
+
+  Calculates the orientation of the face using numpy data from the
+  facial landmarks captured with respect to the camera.
+
+  Args:
+    frame: Numpy array of the captured frame.
+    face_landmarks: Numpy array of the possible facial landmarks.
+
+  Returns:
+    Tuple of parameters which I really don't have much idea about.
+
+  TODO (xames3): Add proper docstring for this function.
+  """
+  # You can find the reference code here:
+  # https://github.com/qhan1028/Headpose-Detection/blob/5465c1bff0eb68524dfe82608be9aad4aade84e3/headpose.py#L107
+  height, width, _ = frame.shape
+  focal_length = width
+  center_x, center_y = width / 2, height / 2
+  camera_matrix = np.array([[focal_length, 0, center_x],
+                            [0, focal_length, center_y],
+                            [0, 0, 1]], dtype=np.double)
+  # This is something which presumes there's no lens distortion.
+  lens_distortion_bias = np.zeros((4, 1))
+  # Rotational & Translational vector.
+  (_, rotation_vector,
+   translation_vector) = cv2.solvePnP(models.LANDMARKS_3D_COORDS_LIST[1],
+                                      face_landmarks, camera_matrix,
+                                      lens_distortion_bias)
+  rotational_matrix = cv2.Rodrigues(rotation_vector)[0]
+  projection_matrix = np.hstack((rotational_matrix, translation_vector))
+  degrees = -cv2.decomposeProjectionMatrix(projection_matrix)[6]
+  return degrees[:, 0]
 
 
 def detect_faces(frame: np.ndarray,
+                 localized_faces: np.ndarray,
+                 face_predictor: shape_predictor,
                  confidence: float = defaults.DETECTED_FACE_CONFIDENCE,
+                 random_detection_color: bool = True,
+                 description_text_color: Tuple = colors.WHITE,
+                 description_box_color: Tuple = colors.BLACK,
+                 description_box_opacity: float = 0.3,
+                 description_box_thickness: int = 1,
                  bounding_box_color: Tuple = colors.RED,
-                 bounding_box_thickness: int = 2,
-                 label_color: Tuple = colors.WHITE,
-                 label_box_color: Tuple = colors.BLACK,
-                 label_box_opacity: Union[float, int] = 0.3,
-                 label_box_thickness: int = 1,
-                 label_box_overlay_color: Tuple = colors.BLACK,
-                 bounding_box_opacity: Union[float, int] = 0.1,
-                 bounding_box_overlay_color: Tuple = colors.RED) -> None:
+                 bounding_box_opacity: float = 0.3,
+                 bounding_box_thickness: int = 2) -> None:
   """Detect faces in the frame.
 
   Detect faces in the frame and draw bounding box around the detected
-  faces.
+  faces with respective information for the face.
 
   Args:
     frame: Numpy array of the captured frame.
-    confidence: Floating (default: 0.7) value for facial confidence.
-    label_color: Label color (default: white).
-    bounding_box_color: Bounding box (default: yellow) color.
-    bounding_box_thickness: Thickness (default: 1) of the bounding box.
-    bounding_box_opacity: Opacity (default: 0.2) of the detected region.
-    bounding_box_overlay_color: Overlayed color (default: red).
+    localized_faces: Coordinates of the localized face in the frame.
+    face_predictor: DLib's shape predictor object with facial landmarks.
+    confidence: Floating (default: 0.4) value for facial confidence.
+    random_detection_color: Boolean (default: True) value to use random
+                            colors for each detected face.
+    description_text_color: Description text color (default: white).
+    description_box_color: Description box (default: black) color.
+    description_box_opacity: Opacity (default: 0.3) of the description
+                             box.
+    description_box_thickness: Thickness (default: 1) of the description
+                               box.
+    bounding_box_color: Bounding box (default: red) color.
+    bounding_box_thickness: Thickness (default: 2) of the bounding box.
+    bounding_box_opacity: Opacity (default: 0.3) of the detected region.
 
   Note:
-    * Faces will only be detected if the confidence scores are above the
-      'defaults.DETECTED_FACE_CONFIDENCE' value.
-    * Using landmarks can slow down the stream and the overall
-      usability. Hence, use sparingly!
+    Faces will only be detected if the confidence scores are above the
+    'defaults.DETECTED_FACE_CONFIDENCE' value.
   """
-  label = 'Detected face'
-  height, width = frame.shape[:2]
-  # You can learn more about blob here:
-  # https://www.pyimagesearch.com/2017/11/06/deep-learning-opencvs-blobfromimage-works/
-  blob = cv2.dnn.blobFromImage(rescale(frame, 300, 300), 1.0, (299, 299),
-                               (104.0, 177.0, 123.0))
-  # Loading serialized CaffeModel for face detection.
-  net = cv2.dnn.readNetFromCaffe(symlinks.prototext, symlinks.caffemodel)
-  net.setInput(blob)
-  detected_faces = net.forward()
-  # Loop over all the detected faces in the frame.
-  for idx in range(detected_faces.shape[2]):
-    coords = detected_faces[0, 0, idx, 3:7] * np.array([width, height,
-                                                        width, height])
-    detected_confidence = detected_faces[0, 0, idx, 2]
-    # If the detected faces have confidence score more than
-    # DETECTED_FACE_CONFIDENCE, draw bounding boxes around them.
-    if detected_confidence > confidence:
-      x0, y0, x1, y1 = coords.astype('int')
-      # Draw a bounding box across the detected face and add the
-      # corresponding label relative to it.
-      draw_bounding_box(frame, (x0, y0), (x1, y1), detected_confidence, label,
-                        bounding_box_color, bounding_box_thickness, label_color,
-                        label_box_color, label_box_opacity, label_box_thickness,
-                        label_box_overlay_color, bounding_box_opacity,
-                        bounding_box_overlay_color)
-
-
-def apply_landmarks(frame: np.ndarray,
-                    radius: int = 2,
-                    landmarks_color: Tuple = colors.MEDIUM_VIOLET_RED) -> None:
-  """Applies facial landmarks.
-
-  Applies 5 point facial landmarks to the detected face instead of 68.
-  This implementation is based on Adrian Rosebrock's, `(Faster) Facial
-  landmark detector with dlib` blog.
-
-  Args:
-    frame: Numpy array of the captured frame.
-    radius: Radius of the circle representing the landmark point.
-    landmarks_color: Landmark (default: medium violet red) color.
-
-  Note:
-    Using landmarks can slow down the stream and the overall usability.
-    Hence, use sparingly!
-  """
-  # You can find the reference code here:
-  # https://www.pyimagesearch.com/2018/04/02/faster-facial-landmark-detector-with-dlib/
-  detector = get_frontal_face_detector()
-  landmarks = shape_predictor(symlinks.face_landmarks)
+  detected_faces = []
+  height, width, _ = frame.shape
   gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-  faces = detector(gray_frame, 0)
-  # Use len(faces) to get the count of faces in the frame.
-  # Loop over all the faces in the frame.
-  for face in faces:
-    x, y, _, _ = face_utils.rect_to_bb(face)
-    shape = landmarks(gray_frame, face)
-    shape = face_utils.shape_to_np(shape)
-    # Draw detected face landmarks -> eyes and nose tip.
-    for (x, y) in shape:
-      cv2.circle(frame, (x, y), radius, landmarks_color, -1)
+  # Loop over all the localized faces in the frame.
+  for idx in np.arange(0, localized_faces.shape[2]):
+    detection_confidence = localized_faces[0, 0, idx, 2]
+    # If the localized faces have confidence score more than
+    # DETECTED_FACE_CONFIDENCE, draw bounding boxes around them.
+    if detection_confidence > confidence:
+      bounding_box = localized_faces[0, 0, idx, 3:7] * np.array([width, height,
+                                                                 width, height])
+      x0, y0, x1, y1 = bounding_box.astype('int')
+      # Calculate Yaw, Pitch & Roll of the face.
+      face_landmarks = face_predictor(gray_frame, rectangle(x0, y0, x1, y1))
+      face_landmarks = convert_to_numpy(face_landmarks)
+      x, y, z = calculate_facial_orientation_angles(frame, face_landmarks)
+      # Appending coordinates to count the number of detected faces.
+      detected_faces.append([x0, y0])
+      if random_detection_color:
+        bounding_box_color = colors.COLOR_LIST[len(detected_faces)]
+        description_box_color = bounding_box_color
+      detection_confidence = round(detection_confidence * 100, 2)
+      description = (f'ID : #{len(detected_faces)}\nSCORE : '
+                     f'{detection_confidence}%\nX : {x:+06.2f} Y : {y:+06.2f} '
+                     f'Z : {z:+06.2f}')
+      # Draw a bounding box across the detected face and add the
+      # corresponding information for it.
+      draw_bounding_box(frame, (x0, y0), (x1, y1), description,
+                        description_text_color, description_box_color,
+                        description_box_opacity, description_box_thickness,
+                        bounding_box_color, bounding_box_opacity,
+                        bounding_box_thickness)
