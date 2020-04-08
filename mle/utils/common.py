@@ -26,18 +26,16 @@ import socket
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, List, Tuple, Union
 
-from fuzzywuzzy import fuzz, process
+from rapidfuzz import fuzz, process
 from win10toast import ToastNotifier
 
 from mle.constants import colors, defaults
 from mle.utils import symlinks
 
 
-def find_string(string: str,
-                search: List,
-                min_score: int = 70) -> Optional[str]:
+def find_string(string: str, search: List) -> str:
   """Find string in the list using fuzzy logic.
 
   Find the matching string from the list. It works similar to `find`
@@ -47,26 +45,11 @@ def find_string(string: str,
   Args:
     string: Approximate or exact string to find in the list.
     search: List in which the string needs to be searched in.
-    min_score: Minimum score (default: 70) to make an approximate guess.
 
   Returns:
-    Best guesses string from the list.
-
-  Raises:
-    ValueError: If no matching string is found in the `search` list.
+    Best guess string from the list.
   """
-  # This will give a list of 3 best matches for our search query. The
-  # number of best matches can be varied by altering the value of
-  # `limit` parameter.
-  guessed = process.extract(string, search, limit=3,
-                            scorer=fuzz.partial_ratio)
-
-  for best_guess in guessed:
-    current_score = fuzz.partial_ratio(string, best_guess)
-    if current_score > min_score and current_score > 0:
-      return best_guess[0]
-    else:
-      raise ValueError(f'Couldn\'t find "{string}" in the given list.')
+  return process.extractOne(string, search, scorer=fuzz.partial_ratio)
 
 
 def check_internet(timeout: Union[float, int] = 10.0) -> bool:
@@ -86,16 +69,23 @@ def toast(name: str, message: str, timeout: int = 15) -> None:
   """Display toast message."""
   # You can find the example code here:
   # https://github.com/jithurjacob/Windows-10-Toast-Notifications#example
-  notifier = ToastNotifier()
-  notifier.show_toast(title=name, msg=message, duration=timeout, threaded=True)
+  try:
+    notifier = ToastNotifier()
+    notifier.show_toast(title=name, msg=message,
+                        duration=timeout, threaded=True)
+  except (KeyboardInterrupt, AttributeError):
+    pass
 
 
 def vzen_toast(name: str, message: str, timeout: int = 3) -> None:
   """Display toast message for VZen services without threading."""
   # You can find the example code here:
   # https://github.com/jithurjacob/Windows-10-Toast-Notifications#example
-  notifier = ToastNotifier()
-  notifier.show_toast(title=name, msg=message, duration=timeout)
+  try:
+    notifier = ToastNotifier()
+    notifier.show_toast(title=name, msg=message, duration=timeout)
+  except (KeyboardInterrupt, AttributeError):
+    pass
 
 
 def now() -> datetime:
@@ -123,7 +113,7 @@ def profile(function: Callable) -> Callable:
 
 
 def pick_random_color() -> Tuple:
-  """Randomly selects a color from `mle.constants.colors.py`"""
+  """Randomly selects a color from `./constants/colors.py`"""
   return random.choice(colors.COLOR_LIST)
 
 
@@ -146,9 +136,9 @@ def log(file: str, level: str = 'debug') -> logging.Logger:
   logger.setLevel(f'{level.upper()}')
   name = f'{Path(file.lower()).stem}.log'
   name = Path(os.path.join(symlinks.logs, name))
-  formatter = logging.Formatter(f'%(asctime)s.%(msecs)05d    %(levelname)'
-                                '-8s    %(filename)s:%(lineno)-16s   %(message)'
-                                '-8s', '%Y-%m-%d %H:%M:%S')
+  formatter = logging.Formatter('%(asctime)s.%(msecs)05d    %(levelname)-8s    '
+                                '%(filename)s:%(lineno)-16s    %(message)-8s',
+                                '%Y-%m-%d %H:%M:%S')
   # Create log file.
   file_handler = logging.FileHandler(os.path.join(symlinks.logs, name))
   file_handler.setFormatter(formatter)
@@ -159,3 +149,19 @@ def log(file: str, level: str = 'debug') -> logging.Logger:
   logger.addHandler(stream_handler)
   # Return logger object.
   return logger
+
+
+def seconds_to_datetime(second: int) -> str:
+  """Convert seconds to datetime string."""
+  mins, secs = divmod(second, 60)
+  hours, mins = divmod(mins, 60)
+  return '%02d:%02d:%02d' % (hours, mins, secs)
+
+
+def generate_ordinal(number: Union[float, int]) -> str:
+  """Generate ordinal representation of a number."""
+  _number = int(number)
+  suffix = ['th', 'st', 'nd', 'rd', 'th'][min(_number % 10, 4)]
+  if 11 <= (_number % 100) <= 13:
+    suffix = 'th'
+  return f'{_number}{suffix}'
