@@ -1,8 +1,7 @@
-fuzzywuzzy
+rapidfuzz
 geopy
 pandas
 psutil
-python-Levenshtein
 pywin32
 pywinauto
 uiautomation
