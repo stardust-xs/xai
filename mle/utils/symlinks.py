@@ -51,7 +51,6 @@ prototext = os.path.join(models, _models.FACE_PROTOTEXT)
 face_landmarks_5_pts = os.path.join(models, _models.FACE_LANDMARKS_5_POINTS)
 face_landmarks_68_pts = os.path.join(models, _models.FACE_LANDMARKS_68_POINTS)
 east_text_detector = os.path.join(models, _models.EAST_TEXT_DETECTOR)
-xa_face_detector = os.path.join(models, _models.XA_FACE_FEATURES_DETECTOR)
 
 # Symlinks to all resources.
 arame = os.path.join(resources, 'arame.ttf')
