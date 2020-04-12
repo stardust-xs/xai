@@ -52,7 +52,7 @@ def find_string(string: str, search: List) -> str:
   return process.extractOne(string, search, scorer=fuzz.partial_ratio)
 
 
-def check_internet(timeout: Union[float, int] = 10.0) -> bool:
+def check_internet(timeout: float = 10.0) -> bool:
   """Check the internet connectivity."""
   # You can find the reference code here:
   # https://gist.github.com/yasinkuyu/aa505c1f4bbb4016281d7167b8fa2fc2
@@ -65,25 +65,31 @@ def check_internet(timeout: Union[float, int] = 10.0) -> bool:
   return False
 
 
-def toast(name: str, message: str, timeout: int = 15) -> None:
+def toast(name: str, message: str, timeout: float = 15) -> None:
   """Display toast message."""
   # You can find the example code here:
   # https://github.com/jithurjacob/Windows-10-Toast-Notifications#example
   try:
-    notifier = ToastNotifier()
-    notifier.show_toast(title=name, msg=message,
-                        duration=timeout, threaded=True)
+    if os.name == 'nt':
+      notifier = ToastNotifier()
+      notifier.show_toast(title=name, msg=message,
+                          duration=timeout, threaded=True)
+    else:
+      os.system(f'notify-send {name} {message}')
   except (KeyboardInterrupt, AttributeError):
     pass
 
 
-def vzen_toast(name: str, message: str, timeout: int = 3) -> None:
+def vzen_toast(name: str, message: str, timeout: float = 3) -> None:
   """Display toast message for VZen services without threading."""
   # You can find the example code here:
   # https://github.com/jithurjacob/Windows-10-Toast-Notifications#example
   try:
-    notifier = ToastNotifier()
-    notifier.show_toast(title=name, msg=message, duration=timeout)
+    if os.name == 'nt':
+      notifier = ToastNotifier()
+      notifier.show_toast(title=name, msg=message, duration=timeout)
+    else:
+      os.system(f'notify-send {name} {message}')
   except (KeyboardInterrupt, AttributeError):
     pass
 
