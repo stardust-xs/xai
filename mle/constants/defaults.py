@@ -63,23 +63,17 @@ WEATHER_URL = 'https://api.darksky.net/forecast/'
 # Duration (in mins.) after which MLE makes an API call for the weather.
 WEATHER_CHECK_TIMER = 30.0
 
-# MLE VZen's buffer frame threshold.
+# MLE VZen's buffer frames.
 # This value defines the number of frames MLE's VZen service should
 # process in order to start calculating the FPS & elapsed time of the
 # service.
-BUFFER_FRAME_THRESHOLD = 120
+BUFFER_FRAMES = 120
 
 # MLE's machine learning confidence scores.
 # These values are MLE's minimum threshold/confidence scores for making
 # a particular prediction. These scores factor in while making an
 # accurate prediction.
-# Minimum confidence score for determining if the made prediction is a
-# face or not.
-DETECTED_FACE_CONFIDENCE = 0.4
-# Minimum confidence score for determining if the predicted face is of
-# XA's or not.
-# NOTE: This value is subject to vary/exist depending on the accuracy.
-DETECTED_XA_FACE_CONFIDENCE = 0.85
+MIN_CONFIDENCE = 0.4
 
 # Train, Test and Validation splits ratio.
 # These values decide how the complete dataset needs to be divided into
