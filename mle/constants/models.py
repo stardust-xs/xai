@@ -20,13 +20,17 @@ import numpy as np
 
 # OpenCV model names.
 EAST_TEXT_DETECTOR = 'frozen_east_text_detection.pb'
-FACE_PROTOTEXT = 'deploy.prototxt.txt'
-FACE_CAFFEMODEL = 'res10_300x300_ssd_iter_140000.caffemodel'
-FACE_LANDMARKS_5_POINTS = 'shape_predictor_5_face_landmarks.dat'
-FACE_LANDMARKS_68_POINTS = 'shape_predictor_68_face_landmarks.dat'
+PROTOTEXT = 'deploy.prototxt.txt'
+CAFFEMODEL = 'res10_300x300_ssd_iter_140000.caffemodel'
+LANDMARKS_5_POINTS = 'shape_predictor_5_face_landmarks.dat'
+LANDMARKS_68_POINTS = 'shape_predictor_68_face_landmarks.dat'
+YOLO_V3_CONFIG = 'yolov3_tiny.cfg'
+YOLO_V3_CONFIG = 'yolov3_training.cfg'
+YOLO_V3_WEIGHTS = 'yolov3_mle_face_416x416_3000.weights'
+# YOLO_V3_WEIGHTS = 'yolov3-tiny-obj_last.weights'
 
 # 2d facial landmark position list.
-LANDMARKS_2D_INDEX_LIST = [
+LANDMARKS_2D_INDEX = [
   [30, 8, 36, 45, 48, 54],
   [33, 17, 21, 22, 26,
    36, 39, 42, 45, 31,
@@ -35,7 +39,7 @@ LANDMARKS_2D_INDEX_LIST = [
 ]
 
 # 3D facial landmarks coordinates.
-LANDMARKS_3D_COORDS_LIST = [
+LANDMARKS_3D_COORDS = [
   np.array([[0.0000000,  0.000000,   0.00000],
             [0.0000000, -8.250000,  -1.62500],
             [-5.625000,  4.250000,  -3.37500],
