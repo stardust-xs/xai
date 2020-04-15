@@ -69,8 +69,8 @@ def disconnect(stream: np.ndarray) -> None:
 
 
 def draw_description_box(frame: np.ndarray,
-                         x0_y0: Tuple,
-                         x1_y1: Tuple,
+                         x0_y0: Tuple[int, int],
+                         x1_y1: Tuple[int, int],
                          description: str,
                          description_text_color: Tuple = colors.WHITE,
                          description_box_color: Tuple = colors.BLACK,
@@ -141,8 +141,8 @@ def draw_description_box(frame: np.ndarray,
 
 
 def draw_bounding_box(frame: np.ndarray,
-                      x0_y0: Tuple,
-                      x1_y1: Tuple,
+                      x0_y0: Tuple[int, int],
+                      x1_y1: Tuple[int, int],
                       description: str,
                       description_text_color: Tuple = colors.WHITE,
                       description_box_color: Tuple = colors.BLACK,
@@ -189,8 +189,8 @@ def draw_bounding_box(frame: np.ndarray,
 
 
 def draw_statistics_box(frame: np.ndarray,
+                        x0_y0: Tuple[int, int],
                         description: str,
-                        x0_y0: Tuple,
                         description_text_color: Tuple = colors.WHITE,
                         description_box_color: Tuple = colors.BLACK,
                         description_box_opacity: float = 0.3,
