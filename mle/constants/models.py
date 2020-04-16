@@ -25,9 +25,7 @@ CAFFEMODEL = 'res10_300x300_ssd_iter_140000.caffemodel'
 LANDMARKS_5_POINTS = 'shape_predictor_5_face_landmarks.dat'
 LANDMARKS_68_POINTS = 'shape_predictor_68_face_landmarks.dat'
 YOLO_V3_CONFIG = 'yolov3_tiny.cfg'
-YOLO_V3_CONFIG = 'yolov3_training.cfg'
-YOLO_V3_WEIGHTS = 'yolov3_mle_face_416x416_3000.weights'
-# YOLO_V3_WEIGHTS = 'yolov3-tiny-obj_last.weights'
+YOLO_V3_WEIGHTS = 'yolov3_tiny_416x416_10000.weights'
 
 # 2d facial landmark position list.
 LANDMARKS_2D_INDEX = [
