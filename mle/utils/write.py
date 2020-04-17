@@ -23,24 +23,24 @@ from typing import Any, List
 from mle.constants import defaults
 
 
+def write_data(file: str, *args: Any) -> None:
+  """Write row of data to the csv file."""
+  with open(file, 'a', newline='', encoding=defaults.DEF_CHARSET) as csv_file:
+    csv_obj = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+    csv_obj.writerow([*args])
+
+
+def write_header(file: str, header: List, *args: Any) -> None:
+  """Write header of data to the csv file."""
+  with open(file, 'w', newline='', encoding=defaults.DEF_CHARSET) as csv_file:
+    csv_obj = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+    csv_obj.writerow(header)
+    csv_obj.writerow([*args])
+
+
 def update_data(file: str, header: List, *args: Any) -> None:
-  """Update data in the `csv` file."""
+  """Update data in the csv file."""
   if os.path.isfile(file) and os.path.getsize(file) > 0:
     write_data(file, *args)
   else:
     write_header(file, header, *args)
-
-
-def write_data(file: str, *args: Any) -> None:
-  """Write row of data to the `csv` file."""
-  with open(file, 'a', newline='', encoding=defaults.DEF_CHARSET) as _file:
-    _csv = csv.writer(_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-    _csv.writerow([*args])
-
-
-def write_header(file: str, header: List, *args: Any) -> None:
-  """Write header of data to the `csv` file."""
-  with open(file, 'w', newline='', encoding=defaults.DEF_CHARSET) as _file:
-    _csv = csv.writer(_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
-    _csv.writerow(header)
-    _csv.writerow([*args])
