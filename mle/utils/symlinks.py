@@ -46,11 +46,13 @@ usage = os.path.join(monitor, 'usage')
 weather = os.path.join(monitor, 'weather')
 
 # Symlinks to all models related to OpenCV.
-caffemodel = os.path.join(models, _models.FACE_CAFFEMODEL)
-prototext = os.path.join(models, _models.FACE_PROTOTEXT)
-face_landmarks_5_pts = os.path.join(models, _models.FACE_LANDMARKS_5_POINTS)
-face_landmarks_68_pts = os.path.join(models, _models.FACE_LANDMARKS_68_POINTS)
+caffemodel = os.path.join(models, _models.CAFFEMODEL)
+prototext = os.path.join(models, _models.PROTOTEXT)
+landmarks_5_pts = os.path.join(models, _models.LANDMARKS_5_POINTS)
+landmarks_68_pts = os.path.join(models, _models.LANDMARKS_68_POINTS)
 east_text_detector = os.path.join(models, _models.EAST_TEXT_DETECTOR)
+yolov3_config = os.path.join(models, _models.YOLO_V3_CONFIG)
+yolov3_weights = os.path.join(models, _models.YOLO_V3_WEIGHTS)
 
 # Symlinks to all resources.
 arame = os.path.join(resources, 'arame.ttf')
