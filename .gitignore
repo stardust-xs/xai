@@ -127,18 +127,18 @@ dmypy.json
 # Ignored on-device directories
 archive/
 misc/
-mle/data/raw/
-mle/data/test/
-mle/data/train/
-mle/data/validation/
+mle/data/*
 
 # Ignored on-device files
 mle/logs/*.log
-mle/models/res10_300x300_ssd_iter_140000.caffemodel
-mle/models/deploy.prototxt.txt
-mle/models/shape_predictor_5_face_landmarks.dat
-mle/models/shape_predictor_68_face_landmarks.dat
-mle/models/frozen_east_text_detection.pb
+mle/models/*.caffemodel
+mle/models/*.txt
+mle/models/*.dat
+mle/models/*.pb
+mle/models/*.pb
+mle/models/*.cfg
+mle/models/*.weights
+mle/models/*.h5
 
 # Ignore everything on-device that starts with the below keywords
 test*
