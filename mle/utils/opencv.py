@@ -16,7 +16,7 @@
 # ======================================================================
 """Utility for making convenient use of OpenCV."""
 
-from typing import Tuple
+from typing import Sequence, Union
 
 import cv2
 import numpy as np
@@ -24,29 +24,37 @@ import numpy as np
 from mle.constants import colors
 
 
-def rescale(frame: np.ndarray,
-            width: int = None,
-            height: int = None,
-            interpolation: int = cv2.INTER_AREA) -> np.ndarray:
-  """Rescale the frame.
+def resize(frame: np.ndarray,
+           width: int = None,
+           height: int = None,
+           interpolation: int = cv2.INTER_AREA) -> np.ndarray:
+  """Resize the frame.
 
-  Rescale the stream to a desirable size. This is required before
-  performing the necessary operations.
+  Resize video frame to a desirable height and/or width.
 
   Args:
     frame: Numpy array of the image frame.
-    width: Width (default: None) to be rescaled to.
-    height: Height (default: None) to be rescaled to.
-    interpolation: Interpolation algorithm (default: INTER_AREA) to be
-                   used.
+    width: Width to be resized to.
+    height: Height to be resized to.
+    interpolation: Interpolation algorithm to be used.
 
   Returns:
-    Rescaled numpy array for the input frame.
+    Resized frame with new dimensions.
+
+  Raises:
+    cv2.error: OpenCV's non-exit exception.
+
+  Example:
+    >>> from mle.utils.opencv import resize
+    >>> 
+    >>> frame = resize(frame, width=500, height=200)
+    >>> frame.shape
+    (500, 200, 3)
   """
   try:
     dimensions = None
     frame_height, frame_width, _ = frame.shape
-    # If both width & height are None, then return the original frame.
+    # If both width & height are None, then don't resize
     if width is None and height is None:
       return frame
     if width and height:
@@ -68,149 +76,118 @@ def disconnect(stream: np.ndarray) -> None:
   cv2.destroyAllWindows()
 
 
-def draw_description_box(frame: np.ndarray,
-                         x0_y0: Tuple[int, int],
-                         x1_y1: Tuple[int, int],
-                         description: str,
-                         description_text_color: Tuple = colors.WHITE,
-                         description_box_color: Tuple = colors.BLACK,
-                         description_box_opacity: float = 0.3,
-                         description_box_thickness: int = 1) -> None:
-  """Draw box for adding description for the detection.
+def display_text(frame: np.ndarray,
+                 left: Union[float, int],
+                 top: Union[float, int],
+                 bottom: Union[float, int],
+                 text: str,
+                 text_color: Sequence = colors.WHITE,
+                 box_color: Sequence = colors.BLACK,
+                 box_opacity: float = 0.3,
+                 box_thickness: int = 1) -> None:
+  """Display text.
 
-  Draw a description box relative to the bounding box. This box displays
-  label/name, confidence score, etc. of the detected object.
+  Display text in a box relative to the detection. This box displays
+  texts like label/name, confidence score, etc. for the detection.
 
   Args:
     frame: Numpy array of the image frame.
-    overlay: Copy of the image frame.
-    x0_y0: Tuple of top left coordinates.
-    x1_y1: Tuple of bottom right coordinates.
-    confidence: Confidence score of the detection.
-    description: Description of the detected object.
-    description_text_color: Description text color (default: white).
-    description_box_color: Description box (default: black) color.
-    description_box_opacity: Opacity (default: 0.3) of the description
-                             box.
-    description_box_thickness: Thickness (default: 1) of the description
-                               box.
-
-  Note:
-    The description box is inspired by the Tesla Auto-pilot AI
-    description box. It stays relatively close to the bounding box and
-    switches it's position relative to the motion.
+    left: Left coordinate value.
+    top: Top coordinate value.
+    right: Right coordinate value.
+    bottom: Bottom coordinate value.
+    text: Text to be displayed.
+    text_color: Displayed text color.
+    box_color: Box color.
+    box_opacity: Box opacity.
+    box_thickness: Box thickness.
   """
-  # You can find the reference label video here:
-  # https://www.youtube.com/watch?v=_1MHGUC_BzQ&list=LLDNJ8g4d0prqef0UNX8XkeQ
-  # Unpacking tuples into 4 seperate points.
-  (x0, y0), (_, y1) = x0_y0, x1_y1
-  # Position of the description box by default. Start from the
-  # X - coordinate, just above the bounding box.
-  break_count = description.count('\n')
-  x_bias = max([idx for idx in description.split('\n')], key=lambda x: len(x))
-  x3, y3 = x0, (y0 - (5 + break_count * 20))
-  # If bounding box is at the left edge of the view, display the
-  # description box at the left edge.
+  left, top, bottom = int(left), int(top), int(bottom)
+  break_count = text.count('\n')
+  x_bias = max([idx for idx in text.split('\n')], key=lambda x: len(x))
+  x3, y3 = left, (top - (5 + break_count * 20))
+  # Ensure the bounding box won't go beyond the horizontal view
   if x3 < 0:
     x3 = 0
-  # If bounding box is at the right edge of the view, display the
-  # description box at the right edge by considering the description in
-  # it.
   elif (x3 + 10 + (len(x_bias) * 7) > frame.shape[1]):
     x3 = x3 - (x3 + 10 + len(x_bias) * 7 - (frame.shape[1])) - 10
-  # If the bounding box is high up towards the top, display th
-  # description box at the bottom of bounding box.
+  # Ensure the bounding box won't go beyond the vertical view
   if y3 < 30:
-    y3 = y1 + 30
-  # Initializing new coordinates with adjustments.
-  # NOTE: These adjustments are subjective and may vary in future.
+    y3 = bottom + 30
+  # Initializing new coordinates with adjustments
+  # NOTE: These adjustments are subjective and may vary in future
   x4, y4 = int(x3), int(y3 - 25)
   x5, y5 = int(x3 + 17 + (len(x_bias) * 7)), int((y3 + break_count * 20) - 1)
-  # Adding an alpha bounding box, similar to draw_bounding_box().
-  overlay = frame.copy()
-  cv2.rectangle(overlay, (x4, y4), (x5, y5), description_box_color, -1)
-  cv2.rectangle(frame, (x4, y4), (x5, y5),
-                description_box_color, description_box_thickness)
-  cv2.addWeighted(overlay, description_box_opacity, frame,
-                  1 - description_box_opacity, 0, frame)
-  # Adding description.
-  for idx in description.split('\n'):
+  # Adding detection mask, similar to display_detection()
+  mask = frame.copy()
+  cv2.rectangle(mask, (x4, y4), (x5, y5), box_color, -1)
+  cv2.rectangle(frame, (x4, y4), (x5, y5), box_color, box_thickness)
+  cv2.addWeighted(mask, box_opacity, frame, 1 - box_opacity, 0, frame)
+  # Adding text with line breaks
+  for idx in text.split('\n'):
     cv2.putText(frame, idx, (int(x3 + 7), int(y3 - 10)),
-                cv2.FONT_HERSHEY_DUPLEX, 0.4, description_text_color)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.4, text_color, lineType=cv2.LINE_AA)
     y3 = y3 + 20
 
 
-def draw_bounding_box(frame: np.ndarray,
-                      x0_y0: Tuple[int, int],
-                      x1_y1: Tuple[int, int],
-                      description: str,
-                      description_text_color: Tuple = colors.WHITE,
-                      description_box_color: Tuple = colors.BLACK,
-                      description_box_opacity: float = 0.3,
-                      description_box_thickness: int = 1,
-                      bounding_box_color: Tuple = colors.RED,
-                      bounding_box_opacity: float = 0.3,
-                      bounding_box_thickness: int = 2) -> None:
-  """Draw bounding box.
+def display_detection(frame: np.ndarray,
+                      left: Union[float, int],
+                      top: Union[float, int],
+                      right: Union[float, int],
+                      bottom: Union[float, int],
+                      text: str,
+                      text_color: Sequence = colors.WHITE,
+                      box_color: Sequence = colors.BLACK,
+                      box_opacity: float = 0.3,
+                      box_thickness: int = 1) -> None:
+  """Display detected object.
 
-  Draws the bounding box around the detection using its coordinates.
-
-  Args:
-    frame: Numpy array of the image frame.
-    x0_y0: Tuple of top left coordinates.
-    x1_y1: Tuple of bottom right coordinates.
-    description: Description of the detected object.
-    description_text_color: Description text color (default: white).
-    description_box_color: Description box (default: black) color.
-    description_box_opacity: Opacity (default: 0.3) of the description
-                             box.
-    description_box_thickness: Thickness (default: 1) of the description
-                               box.
-    bounding_box_color: Bounding box (default: red) color.
-    bounding_box_opacity: Opacity (default: 0.3) of the detected region.
-    bounding_box_thickness: Thickness (default: 2) of the bounding box.
-
-  Note:
-    For Haar based detections, modify the x1_y1 tuple like below:
-    draw_bounding_box(frame, x0, y0, (x1 - x0), (y1 - y0), 'XAMES3')
-  """
-  overlay = frame.copy()
-  cv2.rectangle(overlay, x0_y0, x1_y1, bounding_box_color, -1)
-  # Main bounding box for the detection.
-  cv2.rectangle(frame, x0_y0, x1_y1, bounding_box_color,
-                bounding_box_thickness)
-  # Add transparent/alpha overlay on the frame.
-  cv2.addWeighted(overlay, bounding_box_opacity, frame,
-                  1 - bounding_box_opacity, 0, frame)
-  # Draw description box relative to the bounding box.
-  draw_description_box(frame, x0_y0, x1_y1, description,
-                       description_text_color, description_box_color,
-                       description_box_opacity, description_box_thickness)
-
-
-def draw_statistics_box(frame: np.ndarray,
-                        x0_y0: Tuple[int, int],
-                        description: str,
-                        description_text_color: Tuple = colors.WHITE,
-                        description_box_color: Tuple = colors.BLACK,
-                        description_box_opacity: float = 0.3,
-                        description_box_thickness: int = 1) -> None:
-  """Draw box for displaying statisticse.
-
-  Draws box for displaying statistics box at particular point. 
+  Display detected object by drawing rectangular bounding box around it.
 
   Args:
     frame: Numpy array of the image frame.
-    description: Description/Statistics to be displayed
-    x0_y0: Tuple of top left coordinates.
-    description_text_color: Description text color (default: white).
-    description_box_color: Description box (default: black) color.
-    description_box_opacity: Opacity (default: 0.3) of the description
-                             box.
-    description_box_thickness: Thickness (default: 1) of the description
-                               box.
+    left: Left coordinate value.
+    top: Top coordinate value.
+    right: Right coordinate value.
+    bottom: Bottom coordinate value.
+    text: Text to be displayed.
+    text_color: Displayed text color.
+    box_color: Box color.
+    box_opacity: Box opacity.
+    box_thickness: Box thickness.
   """
-  # Default information template.
-  draw_description_box(frame, x0_y0, (x0_y0[0], (x0_y0[1] - 5)), description,
-                       description_text_color, description_box_color,
-                       description_box_opacity, description_box_thickness)
+  left, top, right, bottom = int(left), int(top), int(right), int(bottom)
+  # Adding detection mask
+  mask = frame.copy()
+  cv2.rectangle(mask, (left, top), (right, bottom), box_color, -1)
+  cv2.addWeighted(mask, box_opacity, frame, 1 - box_opacity, 0, frame)
+  cv2.rectangle(frame, (left, top), (right, bottom), box_color, box_thickness)
+  # Display text box relative to the detections
+  display_text(frame, left, top, bottom, text, text_color, box_color,
+               box_opacity, box_thickness)
+
+
+def display_statistics(frame: np.ndarray,
+                       left: Union[float, int],
+                       top: Union[float, int],
+                       text: str,
+                       text_color: Sequence = colors.WHITE,
+                       box_color: Sequence = colors.BLACK,
+                       box_opacity: float = 0.3,
+                       box_thickness: int = 1) -> None:
+  """Display statistics.
+
+  Display statistics in a box. 
+
+  Args:
+    frame: Numpy array of the image frame.
+    left: Left coordinate value.
+    top: Top coordinate value.
+    text: Text to be displayed.
+    text_color: Displayed text color.
+    box_color: Box color.
+    box_opacity: Box opacity.
+    box_thickness: Box thickness.
+  """
+  display_text(frame, left, top, top - 5, text, text_color, box_color,
+               box_opacity, box_thickness)
