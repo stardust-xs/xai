@@ -23,41 +23,28 @@ import numpy as np
 
 from dlib import rectangle, shape_predictor
 from mle.constants import colors, defaults, models
-from mle.utils.opencv import draw_bounding_box
+from mle.utils.opencv import display_detection
 
 
-def convert_to_numpy(face_predictor: shape_predictor) -> np.ndarray:
-  """Converts the DLib's shape predictor object to a numpy array.
+def convert_to_numpy(predictor: shape_predictor) -> np.ndarray:
+  """Converts shape predictor object to a numpy array.
 
-  Converts the facial landmarks shape predictor to a Numpy array.
+  Converts the facial landmarks shape predictor to a numpy array.
 
   Args:
-    face_predictor: DLib's shape predictor object with facial landmarks.
+    predictor: Dlib's shape predictor object with facial landmarks.
   """
   # You can find the reference code here:
   # https://github.com/qhan1028/Headpose-Detection/blob/5465c1bff0eb68524dfe82608be9aad4aade84e3/headpose.py#L75
   shape_coords = []
   for idx in models.LANDMARKS_2D_INDEX[1]:
-    shape_coords += [[face_predictor.part(idx).x, face_predictor.part(idx).y]]
+    shape_coords += [[predictor.part(idx).x, predictor.part(idx).y]]
   return (np.array(shape_coords).astype(np.int)).astype(np.double)
 
 
-def calculate_facial_orientation_angles(frame: np.ndarray,
-                                        face_landmarks: np.ndarray) -> Tuple:
-  """Calculate orientation of the face with respect to the camera.
-
-  Calculates the orientation of the face using numpy data from the
-  facial landmarks captured with respect to the camera.
-
-  Args:
-    frame: Numpy array of the captured frame.
-    face_landmarks: Numpy array of the possible facial landmarks.
-
-  Returns:
-    Tuple of parameters which I really don't have much idea about.
-
-  TODO (xames3): Add proper docstring for this function.
-  """
+def calculate_orientation_angles(frame: np.ndarray,
+                                 landmarks: np.ndarray) -> Tuple:
+  """Calculate face orientation."""
   # You can find the reference code here:
   # https://github.com/qhan1028/Headpose-Detection/blob/5465c1bff0eb68524dfe82608be9aad4aade84e3/headpose.py#L107
   height, width, _ = frame.shape
@@ -68,10 +55,9 @@ def calculate_facial_orientation_angles(frame: np.ndarray,
                             [0, 0, 1]], dtype=np.double)
   # This is something which presumes there's no lens distortion.
   lens_distortion_bias = np.zeros((4, 1))
-  # Rotational & Translational vector.
   (_, rotation_vector,
    translation_vector) = cv2.solvePnP(models.LANDMARKS_3D_COORDS[1],
-                                      face_landmarks, camera_matrix,
+                                      landmarks, camera_matrix,
                                       lens_distortion_bias)
   rotational_matrix = cv2.Rodrigues(rotation_vector)[0]
   projection_matrix = np.hstack((rotational_matrix, translation_vector))
@@ -80,150 +66,45 @@ def calculate_facial_orientation_angles(frame: np.ndarray,
 
 
 def detect_faces_using_caffe(frame: np.ndarray,
-                             localized_faces: np.ndarray,
-                             face_predictor: shape_predictor,
-                             confidence: float = defaults.MIN_CONFIDENCE,
-                             random_detection_color: bool = True,
-                             description_text_color: Tuple = colors.WHITE,
-                             description_box_color: Tuple = colors.BLACK,
-                             description_box_opacity: float = 0.3,
-                             description_box_thickness: int = 1,
-                             bounding_box_color: Tuple = colors.RED,
-                             bounding_box_opacity: float = 0.3,
-                             bounding_box_thickness: int = 2) -> None:
+                             neural_net: np.ndarray,
+                             predictor: shape_predictor,
+                             min_confidence: float = defaults.MIN_CONFIDENCE,
+                             text_color: Tuple = colors.WHITE,
+                             box_color: Tuple = colors.RED,
+                             box_opacity: float = 0.2,
+                             box_thickness: int = 0) -> None:
   """Detect faces in the frame.
 
   Detect faces in the frame and draw bounding box around the detected
   faces with respective information for the face.
 
   Args:
-    frame: Numpy array of the captured frame.
-    localized_faces: Coordinates of the localized face in the frame.
-    face_predictor: DLib's shape predictor object with facial landmarks.
-    confidence: Floating (default: 0.4) value for facial confidence.
-    random_detection_color: Boolean (default: True) value to use random
-                            colors for each detected face.
-    description_text_color: Description text color (default: white).
-    description_box_color: Description box (default: black) color.
-    description_box_opacity: Opacity (default: 0.3) of the description
-                             box.
-    description_box_thickness: Thickness (default: 1) of the description
-                               box.
-    bounding_box_color: Bounding box (default: red) color.
-    bounding_box_thickness: Thickness (default: 2) of the bounding box.
-    bounding_box_opacity: Opacity (default: 0.3) of the detected region.
-
-  Note:
-    Faces will only be detected if the confidence scores are above the
-    'defaults.MIN_CONFIDENCE' value.
+    frame: Numpy array of the image frame.
+    neural_net: Numpy array of the localized face in the frame.
+    predictor: Dbib's shape predictor object with facial landmarks.
+    min_confidence: Minimum face detection confidence score.
+    text_color: Displayed text color.
+    box_color: Box color.
+    box_opacity: Box opacity.
+    box_thickness: Box thickness.
   """
   detected_faces = []
   height, width, _ = frame.shape
   gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-  # Loop over all the localized faces in the frame.
-  for idx in np.arange(0, localized_faces.shape[2]):
-    detection_confidence = localized_faces[0, 0, idx, 2]
-    # If the localized faces have confidence score more than
-    # MIN_CONFIDENCE, draw bounding boxes around them.
-    if detection_confidence > confidence:
-      bounding_box = localized_faces[0, 0, idx, 3:7] * np.array([width, height,
-                                                                 width, height])
-      x0, y0, x1, y1 = bounding_box.astype('int')
-      # Calculate Yaw, Pitch & Roll of the face.
-      face_landmarks = face_predictor(gray_frame, rectangle(x0, y0, x1, y1))
-      face_landmarks = convert_to_numpy(face_landmarks)
-      x, y, z = calculate_facial_orientation_angles(frame, face_landmarks)
-      # Appending coordinates to count the number of detected faces.
-      detected_faces.append([x0, y0])
-      if random_detection_color:
-        bounding_box_color = colors.COLOR_LIST[len(detected_faces)]
-        description_box_color = bounding_box_color
-      detection_confidence = round(detection_confidence * 100, 2)
-      description = (f'ID : #{len(detected_faces)}\nSCORE : '
-                     f'{detection_confidence}%\nX : {x:+06.2f} Y : {y:+06.2f} '
-                     f'Z : {z:+06.2f}')
-      # Draw a bounding box across the detected face and add the
-      # corresponding information for it.
-      draw_bounding_box(frame, (x0, y0), (x1, y1), description,
-                        description_text_color, description_box_color,
-                        description_box_opacity, description_box_thickness,
-                        bounding_box_color, bounding_box_opacity,
-                        bounding_box_thickness)
-
-
-def detect_faces_using_yolo(frame: np.ndarray,
-                            output_networks: np.ndarray,
-                            min_confidence: float = defaults.MIN_CONFIDENCE,
-                            random_detection_color: bool = True,
-                            description_text_color: Tuple = colors.WHITE,
-                            description_box_color: Tuple = colors.BLACK,
-                            description_box_opacity: float = 0.3,
-                            description_box_thickness: int = 1,
-                            bounding_box_color: Tuple = colors.RED,
-                            bounding_box_opacity: float = 0.3,
-                            bounding_box_thickness: int = 2) -> None:
-  """Detect faces in the frame using YOLOv3 object detection.
-
-  Detect faces in the frame and draw bounding box around the detected
-  faces with respective information for the face using YOLOv3 object
-  detection algorithm.
-
-  Args:
-    frame: Numpy array of the captured frame.
-    localized_faces: Coordinates of the localized face in the frame.
-    face_predictor: DLib's shape predictor object with facial landmarks.
-    confidence: Floating (default: 0.4) value for facial confidence.
-    random_detection_color: Boolean (default: True) value to use random
-                            colors for each detected face.
-    description_text_color: Description text color (default: white).
-    description_box_color: Description box (default: black) color.
-    description_box_opacity: Opacity (default: 0.3) of the description
-                             box.
-    description_box_thickness: Thickness (default: 1) of the description
-                               box.
-    bounding_box_color: Bounding box (default: red) color.
-    bounding_box_thickness: Thickness (default: 2) of the bounding box.
-    bounding_box_opacity: Opacity (default: 0.3) of the detected region.
-
-  Note:
-    Faces will only be detected if the confidence scores are above the
-    'defaults.MIN_CONFIDENCE' value.
-  """
-  faces, confidences, class_ids = [], [], []
-  confidence, class_id = None, None
-  height, width, _ = frame.shape
-  # For each detection from each output layer we get the confidence,
-  # class id, bounding box coords.
-  # If the detections have confidence score more than MIN_CONFIDENCE,
-  # draw bounding boxes around them.
-  for output_network in output_networks:
-    for detection in output_network:
-      scores = detection[5:]
-      class_id = np.argmax(scores)
-      confidence = scores[class_id]
-      if confidence > min_confidence:
-        center_x = int(detection[0] * width)
-        center_y = int(detection[1] * height)
-        w = int(detection[2] * width)
-        h = int(detection[3] * height)
-        x = center_x - w / 2
-        y = center_y - h / 2
-        class_ids.append(class_id)
-        confidences.append(round(confidence * 100, 2))
-        faces.append([x, y, w, h])
-  idxs = cv2.dnn.NMSBoxes(faces, confidences, min_confidence, 0.4)
-  for idx in idxs:
-    idx = idx[0]
-    face = faces[idx]
-    x, y, w, h = (int(face[0]), int(face[1]),
-                  int(face[0] + face[2]), int(face[1] + face[3]))
-    bounding_box_color = colors.COLOR_LIST[idx]
-    description_box_color = bounding_box_color
-    description = f'ID : #{idx + 1}\nSCORE : {confidence}%'
-    # Draw a bounding box across the detected face and add the
-    # corresponding information for it.
-    draw_bounding_box(frame, (x, y), (w, h), description,
-                      description_text_color, description_box_color,
-                      description_box_opacity, description_box_thickness,
-                      bounding_box_color, bounding_box_opacity,
-                      bounding_box_thickness)
+  # Loop over all the localized faces in the frame
+  for idx in np.arange(0, neural_net.shape[2]):
+    confidence = neural_net[0, 0, idx, 2]
+    if confidence > min_confidence:
+      bounding_box = neural_net[0, 0, idx, 3:7] * np.array([width, height,
+                                                            width, height])
+      left, top, right, bottom = bounding_box.astype('int')
+      # Calculate Yaw, Pitch & Roll of the face
+      landmarks = predictor(gray_frame, rectangle(left, top, right, bottom))
+      landmarks = convert_to_numpy(landmarks)
+      x, y, z = calculate_orientation_angles(frame, landmarks)
+      # Appending coordinates to count the number of detected faces
+      detected_faces.append([left, top])
+      box_color = colors.COLOR_LIST[len(detected_faces)]
+      description = f'{len(detected_faces):0>3} : {round(confidence * 100, 2)}%'
+      display_detection(frame, left, top, right, bottom, description,
+                        text_color, box_color, box_opacity, box_thickness)
