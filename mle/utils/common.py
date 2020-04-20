@@ -21,35 +21,50 @@ import io
 import logging
 import os
 import pstats
-import random
 import socket
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, List, Tuple, Union
+from typing import Callable, Sequence, Union
 
 from rapidfuzz import fuzz, process
 from win10toast import ToastNotifier
 
-from mle.constants import colors, defaults
+from mle.constants import defaults as dx
 from mle.utils import symlinks
 
 
-def find_string(string: str, search: List) -> str:
-  """Find string in the list using fuzzy logic.
+def fuzzy_search(keyword: str, search_in: Sequence) -> str:
+  """Search using fuzzy logic.
 
-  Find the matching string from the list. It works similar to `find`
-  method but uses fuzzy logic for evaluating and guessing the correct
-  word.
+  Search using fuzzy logic with an approximate or exact keyword.
 
   Args:
-    string: Approximate or exact string to find in the list.
-    search: List in which the string needs to be searched in.
+    keyword: Approximate or exact keyword to keyword.
+    search_in: Material in which the keyword needs to be searched in.
 
   Returns:
-    Best guess string from the list.
+    Best guess from the material.
+
+  Examples:
+    - Find files in directories:
+      >>> import os
+      >>> from mle.utils.common import fuzzy_search
+      >>>
+      >>> fuzzy_search('okami', os.listdir('D:/multimedia/music/'))
+      'Okami - Kamiki Village.mp3'
+      >>>
+
+    - Find first sentence which has the matching word:
+      >>> import os
+      >>> from mle.utils.common import fuzzy_search
+      >>>
+      >>> test_list = ['The quick', 'brown fox jumps', 'over lazy dog']
+      >>> fuzzy_search('barwn', test_list)
+      'brown fox jumps'
+      >>>
   """
-  return process.extractOne(string, search, scorer=fuzz.partial_ratio)
+  return process.extractOne(keyword, search_in, scorer=fuzz.partial_ratio)[0]
 
 
 def check_internet(timeout: float = 10.0) -> bool:
@@ -57,15 +72,14 @@ def check_internet(timeout: float = 10.0) -> bool:
   # You can find the reference code here:
   # https://gist.github.com/yasinkuyu/aa505c1f4bbb4016281d7167b8fa2fc2
   try:
-    socket.create_connection((defaults.PING_URL, defaults.PING_PORT),
-                             timeout=timeout)
+    socket.create_connection((dx.PING_URL, dx.PING_PORT), timeout=timeout)
     return True
-  except OSError:
-    pass
-  return False
+  except socket.error:
+    return False
 
 
-def toast(name: str, message: str, timeout: float = 15) -> None:
+def toast(name: str, message: str,
+          timeout: float = 15.0, thread: bool = True) -> None:
   """Display toast message."""
   # You can find the example code here:
   # https://github.com/jithurjacob/Windows-10-Toast-Notifications#example
@@ -73,37 +87,20 @@ def toast(name: str, message: str, timeout: float = 15) -> None:
     if os.name == 'nt':
       notifier = ToastNotifier()
       notifier.show_toast(title=name, msg=message,
-                          duration=timeout, threaded=True)
+                          duration=timeout, threaded=thread)
     else:
       os.system(f'notify-send {name} {message}')
-  except (KeyboardInterrupt, AttributeError):
-    pass
-
-
-def vzen_toast(name: str, message: str, timeout: float = 3) -> None:
-  """Display toast message for VZen services without threading."""
-  # You can find the example code here:
-  # https://github.com/jithurjacob/Windows-10-Toast-Notifications#example
-  try:
-    if os.name == 'nt':
-      notifier = ToastNotifier()
-      notifier.show_toast(title=name, msg=message, duration=timeout)
-    else:
-      os.system(f'notify-send {name} {message}')
-  except (KeyboardInterrupt, AttributeError):
+  except (KeyboardInterrupt, AttributeError, OSError):
     pass
 
 
 def now() -> datetime:
   """Return current time without microseconds."""
-  # This function can be used for calculating start time and time delta.
   return datetime.now().replace(microsecond=0)
 
 
 def profile(function: Callable) -> Callable:
   """Decorator that uses cProfile to profile a function."""
-  # Profiling is necessary and should be used for optimizing the overall
-  # performance.
   def inner(*args, **kwargs):
     prof = cProfile.Profile()
     prof.enable()
@@ -114,13 +111,7 @@ def profile(function: Callable) -> Callable:
     ps.print_stats()
     print(string.getvalue())
     return retval
-
   return inner
-
-
-def pick_random_color() -> Tuple:
-  """Randomly selects a color from `./constants/colors.py`"""
-  return random.choice(colors.COLOR_LIST)
 
 
 def timestamp(timestamp_format: str = '%d_%m_Y_%H_%M_%S') -> str:
@@ -129,7 +120,9 @@ def timestamp(timestamp_format: str = '%d_%m_Y_%H_%M_%S') -> str:
 
 
 def log(file: str, level: str = 'debug') -> logging.Logger:
-  """Create log file and log print events.
+  """Log MLE events.
+
+  Create log file and log necessary events.
 
   Args:
     file: Current file name.
@@ -140,26 +133,24 @@ def log(file: str, level: str = 'debug') -> logging.Logger:
   """
   logger = logging.getLogger(file)
   logger.setLevel(f'{level.upper()}')
-  name = f'{Path(file.lower()).stem}.log'
-  name = Path(os.path.join(symlinks.logs, name))
+  name = Path(os.path.join(symlinks.logs, f'{Path(file.lower()).stem}.log'))
   formatter = logging.Formatter('%(asctime)s.%(msecs)05d    %(levelname)-8s    '
                                 '%(filename)s:%(lineno)-16s    %(message)-8s',
                                 '%Y-%m-%d %H:%M:%S')
-  # Create log file.
+  # Write logs to a file.
   file_handler = logging.FileHandler(os.path.join(symlinks.logs, name))
   file_handler.setFormatter(formatter)
   logger.addHandler(file_handler)
-  # Print log statement.
+  # Print logs as output.
   stream_handler = logging.StreamHandler(sys.stdout)
   stream_handler.setFormatter(formatter)
   logger.addHandler(stream_handler)
-  # Return logger object.
   return logger
 
 
 def seconds_to_datetime(second: int) -> str:
   """Convert seconds to datetime string."""
-  mins, secs = divmod(second, 60)
+  mins, secs = divmod(int(second), 60)
   hours, mins = divmod(mins, 60)
   return '%02d:%02d:%02d' % (hours, mins, secs)
 
