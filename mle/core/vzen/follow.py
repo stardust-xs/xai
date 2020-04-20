@@ -34,28 +34,23 @@ their respective names & logs under `./mle/logs/follow.log`.
 import time
 
 import cv2
+from dlib import shape_predictor
 
 from mle.constants import defaults as dx
-from mle.core.vzen.subservices.detector import detect_faces_using_yolo
-from mle.utils.common import log, now, seconds_to_datetime
-from mle.utils.common import vzen_toast as toast
-from mle.utils.opencv import disconnect, draw_statistics_box, rescale
-from mle.utils.symlinks import yolov3_config, yolov3_weights
+from mle.core.vzen.subservices.detector import detect_faces_using_caffe
+from mle.utils import symlinks
+from mle.utils.common import log, now, seconds_to_datetime, toast
+from mle.utils.opencv import disconnect, display_statistics
 
 # Logging MLE's follow module's activities.
 log = log(__file__)
-# Using YOLOv3 algorithm for making detections.
-net = cv2.dnn.readNetFromDarknet(yolov3_config, yolov3_weights)
-net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
-layer_names = net.getLayerNames()
-output_layers = [layer_names[idx[0] - 1]
-                 for idx in net.getUnconnectedOutLayers()]
+net = cv2.dnn.readNetFromCaffe(symlinks.prototext, symlinks.caffemodel)
+predictor = shape_predictor(symlinks.landmarks_68_pts)
 
 while True:
-  stream = cv2.VideoCapture(r'D:\multimedia\videos\test_videos\skype.mp4')
+  stream = cv2.VideoCapture(0)
   log.info('Vzen service started.')
-  toast('MLE VZen', 'VZen service started.')
+  toast('MLE VZen', 'VZen service started.', 3.0, False)
   time.sleep(dx.REFRESH_TIMER)
   frame_number = 0
   start = now()
@@ -63,19 +58,20 @@ while True:
     # Keep the service running.
     while stream.isOpened():
       _, frame = stream.read()
-      # frame = rescale(frame, 400)
-      # You can learn more about blob here:
-      # https://www.pyimagesearch.com/2017/11/06/deep-learning-opencvs-blobfromimage-works/
-      net.setInput(cv2.dnn.blobFromImage(frame, 0.00392, (416, 416),
-                                         (0, 0, 0), True, crop=False))
-      detect_faces_using_yolo(frame, net.forward(output_layers))
+      height, width, _ = frame.shape
+      elapsed_time = seconds_to_datetime((now() - start).seconds)
+      statistics = f'{elapsed_time}'
       # Calculate and display statistics.
       if frame_number > dx.BUFFER_FRAMES:
-        height, width, _ = frame.shape
         fps = round((frame_number / (now() - start).seconds), 2)
-        elapsed_time = seconds_to_datetime((now() - start).seconds)
-        statistics = f'FPS : {fps}\nELAPSED : {elapsed_time}'
-        draw_statistics_box(frame, (5, height), statistics)
+        statistics = f'{elapsed_time} : {fps} FPS'
+      display_statistics(frame, 5, height, statistics)
+      # You can learn more about blob here:
+      # https://www.pyimagesearch.com/2017/11/06/deep-learning-opencvs-blobfromimage-works/
+      net.setInput(cv2.dnn.blobFromImage(frame, 1.0, (299, 299),
+                                         (104.0, 177.0, 123.0)))
+      detect_faces_using_caffe(frame, net.forward(), predictor)
+      # detect_faces1_using_caffe(frame)
       # Terminate the stream after pressing 'Esc' key.
       cv2.imshow('MLE VZen', frame)
       if cv2.waitKey(1) & 0xFF == int(27):
@@ -85,16 +81,18 @@ while True:
       frame_number += 1
     else:
       log.warning('VZen service broken.')
-      toast('MLE VZen - Warning Notification', 'VZen service broken.')
+      toast('MLE VZen - Warning Notification',
+            'VZen service broken.', 3.0, False)
       time.sleep(dx.EXCEPTION_TIMER)
   except KeyboardInterrupt:
     log.error('VZen service interrupted.')
-    toast('MLE VZen - Error Notification', 'VZen service interrupted.')
+    toast('MLE VZen - Error Notification',
+          'VZen service interrupted.', 3.0, False)
     exit(0)
   except Exception:
     log.critical('Something went wrong with vzen service.')
     toast('MLE VZen - Error Notification',
-          'Something went wrong with the service.')
+          'Something went wrong with the service.', 3.0, False)
     disconnect(stream)
     log.warning('Restarting VZen service.')
     time.sleep(dx.EXCEPTION_TIMER)
