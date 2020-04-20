@@ -84,18 +84,18 @@ MIN_CONFIDENCE = 0.4
 # Training data split threshold.
 TRAIN_SPLIT = 0.7
 # Testing & Validation data split threshold.
-TEST_SPLIT = VALIDATION_SPLIT = 0.15
+TEST_SPLIT = 0.3
 
 # Image dataset target sizes.
 # These values represent a sequence of integers in which the image data
 # array needs to be resized into. Different image classification models
 # have different yet specific target sizes.
 # MLE model image data target size.
-MLE_IMG_SIZE = (220, 220)
+MLE_SIZE = (220, 220)
 # VGG16 model image data target size.
-VGG_IMG_SIZE = [224, 224]
+VGG_SIZE = [224, 224]
 
 # Image dataset input shape.
 # This shape represents height, width and the color channel of an image.
 # The width & height should be equal to image's 'target_size'.
-MLE_IMG_INPUT_SHAPE = (*MLE_IMG_SIZE, 3)
+MLE_INPUT_SHAPE = (*MLE_SIZE, 3)
