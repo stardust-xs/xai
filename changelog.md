@@ -49,11 +49,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Now [detector.py](https://github.com/xames3/mle/commit/f6647a4808c9dd0d5ab636a36c8f18ba09f81b93) doesn't display X, Y & Z orientation angles while detecting faces.
 - Removed `detect_faces_using_yolo()` and moved it to archive from [detector.py](https://github.com/xames3/mle/commit/f6647a4808c9dd0d5ab636a36c8f18ba09f81b93).
 
+[Back to top](#changelog)
+
 ### April 19, 2020
 
 #### Added
 
 - Added legacy commit changes from Apr 17 - Apr 15.
+
+[Back to top](#changelog)
 
 ### April 18, 2020
 
@@ -78,6 +82,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - Removed explicit directories under ./mle/data/ & models from model directory & replace with extensions in [.gitignore](https://github.com/xames3/mle/commit/f78430c239078e70009be2122e0d563c6f397cc5).
 
+[Back to top](#changelog)
+
 ### April 17, 2020
 
 #### Changed
@@ -88,11 +94,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - Model symlinks will no longer have `FACE` prefix.
 
+[Back to top](#changelog)
+
 ### April 16, 2020
 
 #### Changed
 
 - Changed symlink reference to use Tiny YOLOv3 config & weights instead of YOLOv3 in [models.py](https://github.com/xames3/mle/commit/2c9cf6ccb623ca38fe083c793a7546a7386bcfd2).
+
+[Back to top](#changelog)
 
 ### April 15, 2020
 
@@ -110,3 +120,5 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 #### Removed
 
 - [face_detector.py](https://github.com/xames3/mle/commit/672f77a141e778a690c2f5ca01359342d4f1cbef) in favor of `detector.py`.
+
+[Back to top](#changelog)
