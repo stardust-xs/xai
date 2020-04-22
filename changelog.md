@@ -5,13 +5,23 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) starting with version 1.0.
 
-## [Unreleased] - [2.6.1]
+## [Unreleased] - [2.6.2]
+
+### April 22, 2020
+
+#### Changed
+
+- Changed project version from 2.6 to **2.6.1** in [project.py](https://github.com/xames3/mle/commit/4b86ca33de5b795f6429da2b3ba51ddeeb711845).
+- Changed description to text in [detector.py](https://github.com/xames3/mle/commit/a0d1b77c1ac5d4e5da62015ac36103f836ae46a1).
+- Changed minimum face confidence score from 0.4 to **0.5** in [defaults.py](https://github.com/xames3/mle/commit/41a08b0c39b3167767e7e7a28e595c6112f3f80e).
 
 ### April 21, 2020
 
 #### Added
 
 - Added previous day commit changes in [changelog.md].
+
+[Back to top](#changelog)
 
 ### April 20, 2020
 
