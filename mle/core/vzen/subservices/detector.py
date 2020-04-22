@@ -105,6 +105,6 @@ def detect_faces_using_caffe(frame: np.ndarray,
       # Appending coordinates to count the number of detected faces
       detected_faces.append([left, top])
       box_color = colors.COLOR_LIST[len(detected_faces)]
-      description = f'{len(detected_faces):0>3} : {round(confidence * 100, 2)}%'
-      display_detection(frame, left, top, right, bottom, description,
+      text = (f'{len(detected_faces):0>3} : {round(confidence * 100, 2)}%')
+      display_detection(frame, left, top, right, bottom, text,
                         text_color, box_color, box_opacity, box_thickness)
