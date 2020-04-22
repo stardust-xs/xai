@@ -73,7 +73,7 @@ BUFFER_FRAMES = 120
 # These values are MLE's minimum threshold/confidence scores for making
 # a particular prediction. These scores factor in while making an
 # accurate prediction.
-MIN_CONFIDENCE = 0.4
+MIN_CONFIDENCE = 0.5
 
 # Train, Test and Validation splits ratio.
 # These values decide how the complete dataset needs to be divided into
