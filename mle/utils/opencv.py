@@ -50,6 +50,7 @@ def resize(frame: np.ndarray,
     >>> frame = resize(frame, width=500, height=200)
     >>> frame.shape
     (500, 200, 3)
+    >>>
   """
   try:
     dimensions = None
