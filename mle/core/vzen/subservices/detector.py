@@ -42,23 +42,24 @@ def convert_to_numpy(predictor: shape_predictor) -> np.ndarray:
   return (np.array(shape_coords).astype(np.int)).astype(np.double)
 
 
-def calculate_orientation_angles(frame: np.ndarray,
+def calculate_face_orientation(frame: np.ndarray,
                                  landmarks: np.ndarray) -> Tuple:
   """Calculate face orientation."""
   # You can find the reference code here:
   # https://github.com/qhan1028/Headpose-Detection/blob/5465c1bff0eb68524dfe82608be9aad4aade84e3/headpose.py#L107
   height, width, _ = frame.shape
   focal_length = width
-  center_x, center_y = width / 2, height / 2
-  camera_matrix = np.array([[focal_length, 0, center_x],
-                            [0, focal_length, center_y],
+  center = width / 2, height / 2
+  camera_matrix = np.array([[focal_length, 0, center[0]],
+                            [0, focal_length, center[1]],
                             [0, 0, 1]], dtype=np.double)
   # This is something which presumes there's no lens distortion.
   lens_distortion_bias = np.zeros((4, 1))
-  (_, rotation_vector,
+  (rotation_vector,
    translation_vector) = cv2.solvePnP(models.LANDMARKS_3D_COORDS[1],
                                       landmarks, camera_matrix,
-                                      lens_distortion_bias)
+                                      lens_distortion_bias,
+                                      flags=cv2.SOLVEPNP_ITERATIVE)[1:]
   rotational_matrix = cv2.Rodrigues(rotation_vector)[0]
   projection_matrix = np.hstack((rotational_matrix, translation_vector))
   degrees = -cv2.decomposeProjectionMatrix(projection_matrix)[6]
@@ -101,7 +102,7 @@ def detect_faces_using_caffe(frame: np.ndarray,
       # Calculate Yaw, Pitch & Roll of the face
       landmarks = predictor(gray_frame, rectangle(left, top, right, bottom))
       landmarks = convert_to_numpy(landmarks)
-      x, y, z = calculate_orientation_angles(frame, landmarks)
+      x, y, z = calculate_face_orientation(frame, landmarks)
       # Appending coordinates to count the number of detected faces
       detected_faces.append([left, top])
       box_color = colors.COLOR_LIST[len(detected_faces)]
