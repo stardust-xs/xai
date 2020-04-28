@@ -103,7 +103,7 @@ while True:
     toast('MLE Weather Monitor - Error Notification',
           'Weather monitoring service interrupted.')
   except Exception:
-    log.critical('Something went wrong with weather monitoring service.')
+    log.exception('Something went wrong with weather monitoring service.')
     toast('MLE Weather Monitor - Error Notification',
           'Something went wrong with the service.')
     log.warning('Restarting weather monitoring service.')
