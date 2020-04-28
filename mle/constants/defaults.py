@@ -61,7 +61,7 @@ WEATHER_URL = 'https://api.darksky.net/forecast/'
 
 # Weather API check timer.
 # Duration (in mins.) after which MLE makes an API call for the weather.
-WEATHER_CHECK_TIMER = 30.0
+WEATHER_TIMER = 30.0
 
 # MLE VZen's buffer frames.
 # This value defines the number of frames MLE's VZen service should
