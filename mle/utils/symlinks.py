@@ -35,14 +35,16 @@ stats = os.path.join(parent, 'stats')
 raw = os.path.join(data, 'raw')
 test = os.path.join(data, 'test')
 train = os.path.join(data, 'train')
-validation = os.path.join(data, 'validation')
 
 # Grandchild symlinks
 monitor = os.path.join(raw, 'monitor')
 vzen = os.path.join(raw, 'vzen')
+timeline = os.path.join(raw, 'timeline')
 
 # Symlinks to save all data for training purposes
 usage = os.path.join(monitor, 'usage')
+app_data = os.path.join(timeline, 'application')
+wtr_data = os.path.join(timeline, 'weather')
 weather = os.path.join(monitor, 'weather')
 
 # Symlinks to all models related to OpenCV
