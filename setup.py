@@ -14,32 +14,48 @@
 # limitations under the License.
 #
 # ======================================================================
+
 """M.L.E (Emily), a simple AI."""
+
+import os
 
 from setuptools import find_packages, setup
 
-from mle.constants import project
+DOCLINES = __doc__.split('\n')
 
+# This version string is semver compatible & adheres to Semantic
+# Versioning Specification (SemVer) starting with version 0.1.
+# You can read more about it here: https://semver.org/spec/v2.0.0.html
+_version = '3.0.0'
 
-def use_readme() -> str:
-  """Use `README.md` for parsing long description."""
-  with open('README.md') as file:
-    return file.read()
-
+PROJECT_NAME = 'mle'
 
 with open('requirements.txt', 'r') as requirements:
   required_packages = [package.rstrip() for package in requirements]
 
+# Skip downloading packages meant for Windows when running on a Linux
+# machine. This ensures proper package download for the respective OS.
+if os.name != 'nt':
+  skip = ['pywin32', 'pywinauto', 'uiautomation', 'win10toast']
+  required_packages = [idx for idx in required_packages if idx not in skip]
+
+
+def use_readme() -> str:
+  """Use README.md for long description."""
+  with open('README.md', 'r') as file:
+    return file.read()
+
+
 setup(
-  name=project.PROJECT_NAME,
-  version=project.PROJECT_VERSION,
-  url=project.PROJECT_LINK,
-  author=project.AUTHOR,
-  author_email=project.AUTHOR_EMAIL,
-  maintainer=project.AUTHOR,
-  maintainer_email=project.AUTHOR,
+  name=PROJECT_NAME,
+  version=_version,
+  url='https://github.com/xames3/mle/',
+  author='XAMES3',
+  author_email='xames3.developer@gmail.com',
+  maintainer_email='mle.xames3@gmail.com',
+  # PyPI package information.
   classifiers=[
-    'Development Status :: 1 - Planning',
+    'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
     'Intended Audience :: End Users/Desktop',
     'Intended Audience :: Information Technology',
@@ -51,16 +67,7 @@ setup(
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3 :: Only',
-    'Topic :: Communications :: Chat',
-    'Topic :: Communications :: Email',
-    'Topic :: Database',
-    'Topic :: Education :: Testing',
-    'Topic :: Home Automation',
-    'Topic :: Internet :: WWW/HTTP :: Indexing/Search',
-    'Topic :: Multimedia',
     'Topic :: Multimedia :: Graphics :: Capture :: Digital Camera',
-    'Topic :: Multimedia :: Sound/Audio',
-    'Topic :: Multimedia :: Sound/Audio :: Players',
     'Topic :: Multimedia :: Video :: Capture',
     'Topic :: Office/Business :: Scheduling',
     'Topic :: Scientific/Engineering',
@@ -69,14 +76,12 @@ setup(
     'Topic :: Scientific/Engineering :: Information Analysis',
     'Topic :: Scientific/Engineering :: Mathematics',
     'Topic :: Software Development',
-    'Topic :: Software Development :: Documentation',
-    'Topic :: Software Development :: Libraries :: Python Modules',
     'Topic :: System :: Monitoring',
     'Topic :: System :: Networking :: Monitoring :: Hardware Watchdog',
     'Topic :: System :: Networking :: Time Synchronization',
   ],
-  license=project.PROJECT_LICENSE,
-  description=__doc__,
+  license='Apache 2.0',
+  description=DOCLINES[0],
   long_description=use_readme(),
   long_description_content_type='text/markdown',
   keywords='mle machine learning artificial intelligence pandas numpy cv2',
