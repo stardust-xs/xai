@@ -125,8 +125,7 @@ dmypy.json
 .pyre/
 
 # Ignored on-device directories
-archive/
-misc/
+mle/misc/
 mle/data/*
 
 # Ignored on-device files
@@ -134,7 +133,6 @@ mle/logs/*.log
 mle/models/*.caffemodel
 mle/models/*.txt
 mle/models/*.dat
-mle/models/*.pb
 mle/models/*.pb
 mle/models/*.cfg
 mle/models/*.weights
