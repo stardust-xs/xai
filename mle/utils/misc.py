@@ -24,7 +24,7 @@ from typing import Union
 
 from win10toast import ToastNotifier
 
-_URL = 'https://www.google.com/'
+_URL = 'www.google.com'
 _PORT = 80
 
 
@@ -77,4 +77,3 @@ def toast(title: str, msg: str,
       os.system(f'notify-send {title} {msg}')
   except (KeyboardInterrupt, AttributeError, OSError):
     pass
-
