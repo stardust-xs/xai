@@ -15,17 +15,28 @@
 #
 # ======================================================================
 
-"""Utility for miscellaneous functions."""
+"""Set of miscellaneous utilities."""
 
+import csv
 import os
 import socket
 from datetime import datetime
-from typing import Union
+from typing import Sequence, Union
 
 from win10toast import ToastNotifier
 
-_URL = 'www.google.com'
-_PORT = 80
+socket_addr = ('www.google.com', 80)
+
+_UTF = 'utf-8'
+
+
+class Singleton(type):
+  _instances = {}
+
+  def __call__(cls, *args, **kwargs):
+    if cls not in cls._instances:
+      cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+    return cls._instances[cls]
 
 
 def check_internet(timeout: float = 10.0) -> bool:
@@ -33,7 +44,7 @@ def check_internet(timeout: float = 10.0) -> bool:
   # You can find the reference code here:
   # https://gist.github.com/yasinkuyu/aa505c1f4bbb4016281d7167b8fa2fc2
   try:
-    socket.create_connection((_URL, _PORT), timeout=timeout)
+    socket.create_connection(socket_addr, timeout=timeout)
     return True
   except socket.error:
     return False
@@ -62,7 +73,20 @@ def generate_ordinal(number: Union[float, int]) -> str:
 
 def toast(title: str, msg: str,
           duration: float = 5.0, threaded: bool = True) -> None:
-  """Display toast message."""
+  """
+  Display toast message.
+
+  Args:
+    title: Title of the toast.
+    msg: Toast message to display.
+    duration: Toast message duration.
+    threaded: Thread-safe boolean.
+
+  Raises:
+    KeyboardInterrupt: If user cancels the execution.
+    AttributeError: If thread-safe mechanism fails to run.
+    OSError: If something goes wrong while running command on console.
+  """
   # You can find the example code here:
   # https://github.com/jithurjacob/Windows-10-Toast-Notifications#example
   try:
@@ -77,3 +101,22 @@ def toast(title: str, msg: str,
       os.system(f'notify-send {title} {msg}')
   except (KeyboardInterrupt, AttributeError, OSError):
     pass
+
+
+def write_data(file: str, header: Sequence, *args) -> None:
+  """
+  Write data into csv file.
+
+  Args:
+    file: Filepath of csv file.
+    header: Sequence of the headers in the csv file.
+  """
+  with open(file, 'a', newline='', encoding=_UTF) as raw:
+    csv_obj = csv.writer(raw, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+
+    # This ensure that the header is written just once even though the
+    # rows are appended consecutively.
+    if not (os.path.isfile(file) and os.path.getsize(file) > 0):
+      csv_obj.writerow(header)
+
+    csv_obj.writerow([*args])
