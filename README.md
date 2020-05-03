@@ -1,4 +1,4 @@
-# XAI <!-- omit in toc -->
+# X.AI <!-- omit in toc -->
 
 > *XA's personal Artificial Intelligence in the making.*
 
