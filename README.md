@@ -1,4 +1,4 @@
-# XAI <!-- omit in toc -->
+![X.AI Title banner](https://github.com/xames3/xai/blob/assets/media/xai_300_01.png?raw=True "X.AI Title banner")
 
 > *XA's personal Artificial Intelligence in the making.*
 
