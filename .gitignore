@@ -124,19 +124,21 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Ignored on-device directories
-mle/misc/
-mle/data/*
+# Ignore on-device directories
+xai/data/
+xai/logs/
 
-# Ignored on-device files
-mle/logs/*.log
-mle/models/*.caffemodel
-mle/models/*.txt
-mle/models/*.dat
-mle/models/*.pb
-mle/models/*.cfg
-mle/models/*.weights
-mle/models/*.h5
+# Ignore on-device files
+xai/media/*.png
+xai/media/*.psd
+xai/models/*.caffemodel
+xai/models/*.txt
+xai/models/*.dat
+xai/models/*.pb
+xai/models/*.cfg
+xai/models/*.weights
+xai/models/*.h5
 
 # Ignore everything on-device that starts with the below keywords
 test*
+temp*
