@@ -15,28 +15,26 @@
 #
 # ======================================================================
 
-"""M.L.E (Emily), a simple AI."""
+"""XA + AI = X.AI"""
 
 import os
 
 from setuptools import find_packages, setup
 
+from xai import __version__
+
+PROJECT_NAME = 'xai'
+
 DOCLINES = __doc__.split('\n')
-
-# This version string is semver compatible & adheres to Semantic
-# Versioning Specification (SemVer) starting with version 0.1.
-# You can read more about it here: https://semver.org/spec/v2.0.0.html
-_version = '3.0.0'
-
-PROJECT_NAME = 'mle'
 
 with open('requirements.txt', 'r') as requirements:
   required_packages = [package.rstrip() for package in requirements]
 
-# Skip downloading packages meant for Windows when running on a Linux
-# machine. This ensures proper package download for the respective OS.
+# Skip downloading packages meant for Windows when running on a Non -
+# Windows machine. This ensures proper package download for the
+# respective OS.
 if os.name != 'nt':
-  skip = ['pywin32', 'pywinauto', 'uiautomation', 'win10toast']
+  skip = ['pywin32', 'pypywin32', 'uiautomation', 'win10toast']
   required_packages = [idx for idx in required_packages if idx not in skip]
 
 
@@ -48,11 +46,11 @@ def use_readme() -> str:
 
 setup(
   name=PROJECT_NAME,
-  version=_version,
-  url='https://github.com/xames3/mle/',
+  version=__version__,
+  url='https://github.com/xames3/xai/',
   author='XAMES3',
   author_email='xames3.developer@gmail.com',
-  maintainer_email='mle.xames3@gmail.com',
+  maintainer_email='xai.xames3@gmail.com',
   # PyPI package information.
   classifiers=[
     'Development Status :: 3 - Alpha',
@@ -84,7 +82,7 @@ setup(
   description=DOCLINES[0],
   long_description=use_readme(),
   long_description_content_type='text/markdown',
-  keywords='mle machine learning artificial intelligence pandas numpy cv2',
+  keywords='xai machine learning artificial intelligence pandas numpy cv2',
   zip_safe=False,
   install_requires=required_packages,
   python_requires='~=3.6',
