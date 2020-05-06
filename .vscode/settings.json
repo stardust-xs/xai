@@ -44,7 +44,7 @@
     "python.linting.pylintArgs": [
         "--generate-members"
     ],
-    "python.pythonPath": "venv\\Scripts\\python.exe",
+    "python.pythonPath": ".venv\\Scripts\\python.exe",
     "[markdown]": {
         "editor.quickSuggestions": false,
         "editor.insertSpaces": false,
