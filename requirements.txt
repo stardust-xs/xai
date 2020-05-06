@@ -11,3 +11,4 @@ opencv-contrib-python
 keras
 matplotlib
 sklearn
+requests
