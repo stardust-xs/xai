@@ -1,0 +1,4 @@
+Sending email on exception - https://stackoverflow.com/questions/6182693/python-send-email-when-exception-is-raised
+Sending email on some change occurs - https://stackoverflow.com/questions/55073357/how-to-make-a-python-script-automatically-send-an-email-when-certain-data-is-cha
+WhatsApp with Python - https://www.zeolearn.com/magazine/introduction-to-text-mining-in-whatsapp-chats-using-python
+WhatsApp with Python - https://github.com/sprejerlaila/whatsapp-me
