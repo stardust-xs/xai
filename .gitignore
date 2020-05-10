@@ -125,6 +125,7 @@ dmypy.json
 .pyre/
 
 # Ignore on-device directories
+xai/archive/
 xai/data/
 xai/logs/
 
