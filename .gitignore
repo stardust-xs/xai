@@ -139,6 +139,7 @@ xai/models/*.pb
 xai/models/*.cfg
 xai/models/*.weights
 xai/models/*.h5
+NAMES.txt
 
 # Ignore everything on-device that starts with the below keywords
 test*
