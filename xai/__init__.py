@@ -18,10 +18,11 @@
 # This version string is semver compatible & adheres to Semantic
 # Versioning Specification (SemVer) starting with version 0.1.
 # You can read more about it here: https://semver.org/spec/v2.0.0.html
-__version__ = '3.0.0'
+__version__ = '3.0.2'
 
 # Version history
 
+# 3.0.2 - May 15, 2020
 # 3.0.1 - May 04, 2020
 # 3.0.0 - Apr 29, 2020
 # 2.0.1 - Feb 29, 2020
