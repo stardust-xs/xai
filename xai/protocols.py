@@ -84,7 +84,7 @@ class BabyMonitorProtocol(object, metaclass=Neo):
     self._refresh = 1.0
     self._exception = 30.0
 
-    self._path = resource_filename('xai', '/data/test/')
+    self._path = resource_filename('xai', '/data/.baby_monitor/')
     self._file = os.path.join(self._path, '{}.csv')
 
     try:
