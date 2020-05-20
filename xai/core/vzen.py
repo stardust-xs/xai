@@ -30,14 +30,14 @@ import cv2
 import numpy as np
 from pkg_resources import resource_filename
 
-from xai.utils.logger import DiscreteLogger
-from xai.utils.misc import Singleton, now, toast, seconds_to_datetime
+from xai.utils.logger import SilenceOfTheLog
+from xai.utils.misc import Neo, now, toast, seconds_to_datetime
 from xai import __version__
 
-log = DiscreteLogger(__file__).log()
+log = SilenceOfTheLog(__file__).log()
 
 
-class MotherBox(object, metaclass=Singleton):
+class MotherBox(object, metaclass=Neo):
   """Auxillary class for different type of boxes."""
 
   _fnt = cv2.FONT_HERSHEY_SIMPLEX
@@ -130,7 +130,7 @@ class MotherBox(object, metaclass=Singleton):
     self.info(frm, lft, top, btm, inf, txt, box, alp, thk)
 
 
-class Predetecognition(MotherBox, metaclass=Singleton):
+class Predetecognition(MotherBox, metaclass=Neo):
   """Core class for making detections, predictions & recognition."""
 
   _clr = np.random.randint(0, 255, size=(10, 3))
@@ -159,7 +159,7 @@ class Predetecognition(MotherBox, metaclass=Singleton):
         super().bbox(frm, lft, top, rgt, btm, inf, txt, box, alp, thk)
 
 
-class VisualizeEnvironment(Predetecognition, metaclass=Singleton):
+class VisualizeEnvironment(Predetecognition, metaclass=Neo):
   """Core class for visualizing environment."""
 
   def __init__(self, src: Union[int, str] = 0):
