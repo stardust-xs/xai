@@ -84,8 +84,7 @@ class BabyMonitorProtocol(object, metaclass=Neo):
     self._refresh = 1.0
     self._exception = 30.0
 
-    self._path = resource_filename('xai', '/data/.baby_monitor/')
-    self._file = os.path.join(self._path, '{}.csv')
+    self._path = resource_filename('xai', '/data/test/')
 
     try:
       os.mkdir(self._path)
@@ -203,11 +202,11 @@ class BabyMonitorProtocol(object, metaclass=Neo):
             # continues to stay the same beyond set time limit, the
             # record will be saved to newer file.
             if now().strftime(self._format) >= self._limit:
-              self._log.info('Time limit exceeded. Saving records to new file.')
               _raw_date = now() + datetime.timedelta(days=1)
             else:
               _raw_date = now()
 
+            self._file = os.path.join(self._path, '{}.csv')
             self._file = self._file.format(_raw_date.strftime('%d_%m_%y'))
 
             # Skip 'Task Switching' application and other application
@@ -269,6 +268,9 @@ class BabyMonitorProtocol(object, metaclass=Neo):
         # Suspend the execution for 30 seconds if an exception occurs
         # before re-activating the protocol.
         time.sleep(self._exception)
+
+
+BabyMonitorProtocol().activate()
 
 
 class SilverLiningProtocol(object):
