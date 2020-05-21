@@ -35,8 +35,8 @@ from xai.utils.logger import SilenceOfTheLog
 from xai.utils.misc import Neo, check_internet, now, toast, write_data
 
 try:
-  import win32gui
-  import win32process
+  from win32gui import GetForegroundWindow, GetWindowText
+  from win32process import GetWindowThreadProcessId
   from win32api import GetFileVersionInfo
 except ImportError:
   raise
@@ -84,7 +84,7 @@ class BabyMonitorProtocol(object, metaclass=Neo):
     self._refresh = 1.0
     self._exception = 30.0
 
-    self._path = resource_filename('xai', '/data/test/')
+    self._path = resource_filename('xai', '/data/.baby_monitor/')
 
     try:
       os.mkdir(self._path)
@@ -133,13 +133,13 @@ class BabyMonitorProtocol(object, metaclass=Neo):
     """
     # You can find the reference code here:
     # https://stackoverflow.com/a/47936739
-    wnd = win32gui.GetForegroundWindow()
-    pid = win32process.GetWindowThreadProcessId(wnd)[-1]
+    wnd = GetForegroundWindow()
+    pid = GetWindowThreadProcessId(wnd)[-1]
 
     # This "if" condition ensures that we use only the active instances
     # of a process.
     if psutil.pid_exists(pid):
-      hnd = win32gui.GetWindowText(wnd)
+      hnd = GetWindowText(wnd)
       app = self._app_name(psutil.Process(pid).exe())
       exe = psutil.Process(pid).name()
       usr = psutil.Process(pid).username()
@@ -270,9 +270,6 @@ class BabyMonitorProtocol(object, metaclass=Neo):
         time.sleep(self._exception)
 
 
-BabyMonitorProtocol().activate()
-
-
 class SilverLiningProtocol(object):
   """
   Silver Lining Protocol
@@ -313,7 +310,6 @@ class SilverLiningProtocol(object):
     self._exception = 30.0
 
     self._path = resource_filename('xai', '/data/.silver_lining/')
-    self._file = os.path.join(self._path, '{}.csv')
 
     try:
       os.mkdir(self._path)
@@ -399,11 +395,11 @@ class SilverLiningProtocol(object):
           # continues to stay the same beyond set time limit, the
           # record will be saved to newer file.
           if now().strftime(self._format) >= self._limit:
-            self._log.info('Time limit exceeded. Saving records to new file.')
             _raw_date = now() + datetime.timedelta(days=1)
           else:
             _raw_date = now()
 
+          self._file = os.path.join(self._path, '{}.csv')
           self._file = self._file.format(_raw_date.strftime('%d_%m_%y'))
 
           update_time = now()
