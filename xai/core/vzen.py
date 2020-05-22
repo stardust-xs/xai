@@ -22,7 +22,6 @@ Performs recognition, tracking and motion analysis based on the camera
 input.
 """
 
-import os
 import time
 from typing import Sequence, Union
 
