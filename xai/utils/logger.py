@@ -121,7 +121,7 @@ class BackThatAssUp(RotatingFileHandler, metaclass=Neo):
       encoding: File encoding.
       delay: Delay for backup.
     """
-    self._last_bkp_cnt = 0
+    self._bkp_num = 0
     super(BackThatAssUp, self).__init__(filename=file,
                                         mode=mode,
                                         maxBytes=max_bytes,
@@ -133,9 +133,8 @@ class BackThatAssUp(RotatingFileHandler, metaclass=Neo):
     if self.stream:
       self.stream.close()
 
-    self._last_bkp_cnt += 1
-    next_name = f'{self.baseFilename}_{self._last_bkp_cnt}'
-    self.rotate(self.baseFilename, next_name)
+    self._bkp_num += 1
+    self.rotate(self.baseFilename, f'{self.baseFilename}_{self._bkp_num}')
 
     if not self.delay:
       self.stream = self._open()
