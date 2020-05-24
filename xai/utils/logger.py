@@ -190,7 +190,7 @@ class SilenceOfTheLog(object, metaclass=Neo):
 
     # Create backup of the log once the file size reaches 1 Mb.
     file_handler = BackThatAssUp(self._log.format(raw.replace(' ', '_')),
-                                 max_bytes=mem, backups=5)
+                                 max_bytes=mem, backups=bkp)
     file_handler.setFormatter(LordFriezaFormatter())
     logger.addHandler(file_handler)
 
