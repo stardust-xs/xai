@@ -167,7 +167,8 @@ class SilenceOfTheLog(object, metaclass=Neo):
 
     self._log = ''.join([self._path, '{}.log'])
 
-  def log(self, name: str = None, level: str = 'debug') -> logging.Logger:
+  def log(self, name: str = None, level: str = 'debug',
+          max_bytes: int = None, backups: int = None) -> logging.Logger:
     """
     Log X.AI events.
 
