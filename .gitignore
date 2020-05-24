@@ -144,3 +144,8 @@ NAMES.txt
 # Ignore everything on-device that starts with the below keywords
 test*
 temp*
+
+# Ignore everything on-device that ends with the below extensions
+*.bak
+*.bkp
+*.backup
