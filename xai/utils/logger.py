@@ -173,7 +173,10 @@ class SilenceOfTheLog(object, metaclass=Neo):
     Log X.AI events.
 
     Args:
+      name: Name for log file.
       level: Default logging level to log messages.
+      max_bytes: Maximum file size limit for backup.
+      backups: Total number of backup.
 
     Returns:
       Logger object.
