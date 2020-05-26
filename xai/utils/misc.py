@@ -31,6 +31,11 @@ _UTF = 'utf-8'
 
 
 class Neo(type):
+  """
+  Neo
+
+  Neo is a Singleton class which initializes just once.
+  """
   _instances = {}
 
   def __call__(cls, *args, **kwargs):
