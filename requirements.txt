@@ -13,3 +13,4 @@ matplotlib
 sklearn
 requests
 mtcnn
+dlib
