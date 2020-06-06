@@ -133,6 +133,8 @@ def detect_faces(frm: np.ndarray,
   rgb = cv2.cvtColor(frm, cv2.COLOR_BGR2RGB)
   faces = face_detector.detect_faces(rgb)
 
+  cnt = 1
+
   for face in faces:
     # Considering detections which have confidence score higher than the
     # set threshold.
@@ -142,7 +144,7 @@ def detect_faces(frm: np.ndarray,
       rgt, btm = lft + rgt, top + btm
       adj = int((rgt - lft) * 0.03)
 
-      txt = f'CNF : {round(face["confidence"] * 100, 2)}%'
+      txt = f'CNT : {cnt:>02}\nCNF : {round(face["confidence"] * 100, 2)}%'
 
       cv2.rectangle(frm, (lft, top), (rgt, btm), fcr, thk, lnt)
       smart_text_box(frm, lft, top, rgt, btm, txt,
@@ -157,3 +159,5 @@ def detect_faces(frm: np.ndarray,
                         (0, 255, 0), thk, lnt)
         else:
           cv2.circle(frm, pts, 1, (5, 5, 170), -1, lnt)
+
+      cnt += 1
