@@ -19,6 +19,7 @@
 Core VZen.
 """
 
+import time
 from typing import Sequence, Union
 
 import cv2
@@ -27,6 +28,7 @@ from mtcnn import MTCNN
 
 from xai import __version__
 from xai.utils.logger import SilenceOfTheLog
+from xai.utils.misc import now, seconds_to_datetime, toast
 
 log = SilenceOfTheLog(__file__).log()
 
@@ -161,3 +163,82 @@ def detect_faces(frm: np.ndarray,
           cv2.circle(frm, pts, 1, (5, 5, 170), -1, lnt)
 
       cnt += 1
+
+
+class GodsEye(object):
+  """Docstring to be updated."""
+
+  def __init__(self, src: Union[int, str] = 0, scl: float = 0.75) -> None:
+    """Docstring to be updated."""
+    self._service = 'X.AI VZen'
+    self._version = f'{self._service} v{__version__}'
+
+    self._src = src
+    self._scl = scl
+    self._bfr = 30
+    self._frm_num = 1
+
+    self._log = log
+    self._refresh = 1.0
+    self._exception = 30.0
+
+  def perceive_everything(self) -> None:
+    """Perceive everything."""
+    # Keep the service running irrespective of encountered exceptions.
+    # This while loop ensures that the block keeps running even if an
+    # exception has raised. The block suspends for 30 secs. when a
+    # critical exception is raised.
+    while True:
+      self._log.info('Initialized VZen service.')
+      toast(f'{self._service}', 'Initialized VZen service.')
+      started = now()
+
+      self._stm = cv2.VideoCapture(self._src)
+
+      try:
+        # Similar to the parent loop, this loop keeps the block running
+        # forever but breaks when any exceptions are raised.
+        while self._stm.isOpened():
+          val, frm = self._stm.read()
+
+          # Terminate the session if 'Esc' key is pressed or if the
+          # frame is in valid.
+          if cv2.waitKey(1) & 0xFF == int(27) or not val:
+            self._stm.release()
+            cv2.destroyAllWindows()
+            exit(0)
+
+          frm = cv2.resize(frm, None, fx=self._scl, fy=self._scl,
+                           interpolation=cv2.INTER_AREA)
+
+          # Records the time the session has started. This lets X.AI to
+          # calculate the FPS at which the camera(s) are recording.
+          elapsed = seconds_to_datetime((now() - started).seconds)
+          stats = f'{elapsed}'
+
+          # Calculate the FPS of the perceived vision. The FPS is
+          # calculated after the perceived vision is activated
+          if self._frm_num > self._bfr:
+            fps = round(self._frm_num / (now() - started).seconds)
+            stats = f'{elapsed} : {fps:>02} FPS'
+
+          stats = f'{self._version}\n{stats}'
+
+          smart_text_box(frm, 5, 5, 0, 0, stats)
+
+          cv2.imshow(self._service, frm)
+          self._frm_num += self._refresh
+        else:
+          self._log.warning('VZen service broke while streaming.')
+          toast(f'{self._service}', 'VZen service broke.')
+          time.sleep(self._exception)
+      except KeyboardInterrupt:
+        self._log.warning('VZen service interrupted.')
+        toast(f'{self._service}', 'VZen service interrupted.')
+      except Exception as _error:
+        self._log.exception(_error)
+        toast(f'{self._service}', 'VZen service stopped abruptly.')
+      finally:
+        # Sleep for 30 seconds if any exception occurs before restarting
+        # the service.
+        time.sleep(self._exception)
