@@ -34,7 +34,7 @@ class Neo(type):
   """
   Neo
 
-  Neo is a Singleton class which initializes just once.
+  Neo is a Singleton class.
   """
   _instances = {}
 
