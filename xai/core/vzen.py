@@ -23,11 +23,14 @@ from typing import Sequence, Union
 
 import cv2
 import numpy as np
+from mtcnn import MTCNN
 
 from xai import __version__
 from xai.utils.logger import SilenceOfTheLog
 
 log = SilenceOfTheLog(__file__).log()
+
+face_detector = MTCNN(min_face_size=31)
 
 
 def smart_text_box(frm: np.ndarray,
@@ -100,3 +103,57 @@ def smart_text_box(frm: np.ndarray,
     # 0.4 is the font size.
     cv2.putText(frm, idx, (int(x3 + 7), int(y3 - 9)), fnt, 0.4, tcr, thk, lnt)
     y3 = y3 + 20
+
+
+def detect_faces(frm: np.ndarray,
+                 cnf: float = 0.87,
+                 fcr: Sequence = (255, 255, 255),
+                 tcr: Sequence = (255, 255, 255),
+                 bcr: Sequence = (0, 0, 0),
+                 alp: float = 0.5,
+                 thk: int = 1,
+                 fnt: Union[int, str] = cv2.FONT_HERSHEY_SIMPLEX,
+                 lnt: Union[int, str] = cv2.LINE_AA) -> None:
+  """
+  Detect faces in a frame using MTCNN face detector.
+
+  Args:
+    frm: Numpy array of the image frame.
+    cnf: Minimum confidence score for detection.
+    fcr: Face detection bounding box color.
+    tcr: Text color.
+    bcr: Text box color.
+    alp: Text box opacity OR alpha channel.
+    thk: Text box thickness.
+    fnt: OpenCV font to use.
+    lnt: OpenCV line type.
+  """
+  # MTCNN needs RGB frame, since OpenCV reads every frame in BGR format
+  # this conversion is needed.
+  rgb = cv2.cvtColor(frm, cv2.COLOR_BGR2RGB)
+  faces = face_detector.detect_faces(rgb)
+
+  for face in faces:
+    # Considering detections which have confidence score higher than the
+    # set threshold.
+    if face['confidence'] > cnf:
+      lft, top, rgt, btm = face['box']
+      lft, top = abs(lft), abs(top)
+      rgt, btm = lft + rgt, top + btm
+      adj = int((rgt - lft) * 0.03)
+
+      txt = f'CNF : {round(face["confidence"] * 100, 2)}%'
+
+      cv2.rectangle(frm, (lft, top), (rgt, btm), fcr, thk, lnt)
+      smart_text_box(frm, lft, top, rgt, btm, txt,
+                     tcr, bcr, alp, thk, fnt, lnt)
+
+      # Drawing facial landmarks - Eyes, Nose & Mouth.
+      for pts in face['keypoints'].values():
+        if adj > 0:
+          cv2.rectangle(frm,
+                        (pts[0] - adj, pts[1] - adj),
+                        (pts[0] + adj, pts[1] + adj),
+                        (0, 255, 0), thk, lnt)
+        else:
+          cv2.circle(frm, pts, 1, (5, 5, 170), -1, lnt)
