@@ -224,6 +224,8 @@ class GodsEye(object):
 
           stats = f'{self._version}\n{stats}'
 
+          detect_faces(frm)
+
           smart_text_box(frm, 5, 5, 0, 0, stats)
 
           cv2.imshow(self._service, frm)
