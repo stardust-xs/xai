@@ -244,3 +244,7 @@ class GodsEye(object):
         # Sleep for 30 seconds if any exception occurs before restarting
         # the service.
         time.sleep(self._exception)
+
+
+if __name__ == '__main__':
+  GodsEye().perceive_everything()
