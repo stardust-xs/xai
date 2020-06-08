@@ -136,6 +136,7 @@ def detect_faces(frm: np.ndarray,
   faces = face_detector.detect_faces(rgb)
 
   cnt = 1
+  msk = frm.copy()
 
   for face in faces:
     # Considering detections which have confidence score higher than the
@@ -148,6 +149,7 @@ def detect_faces(frm: np.ndarray,
 
       txt = f'CNT : {cnt:>02}\nCNF : {round(face["confidence"] * 100, 2)}%'
 
+      cv2.addWeighted(msk, alp, frm, 1 - alp, 0, frm)
       cv2.rectangle(frm, (lft, top), (rgt, btm), fcr, thk, lnt)
       smart_text_box(frm, lft, top, rgt, btm, txt,
                      tcr, bcr, alp, thk, fnt, lnt)
