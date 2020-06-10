@@ -126,9 +126,3 @@ def write_data(file: str, header: Sequence, *args) -> None:
             csv_obj.writerow(header)
 
         csv_obj.writerow([*args])
-
-
-def get_process_memory():
-  """Docstring to be updated."""
-  process = psutil.Process(os.getpid())
-  return process.memory_info()
