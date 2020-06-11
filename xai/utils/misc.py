@@ -129,7 +129,16 @@ def write_data(file: str, header: Sequence, *args) -> None:
 
 
 def resolve_size(size: Union[float, int]) -> str:
-  """Resolve memory size in human readable format. """
+  """
+  Resolve memory size in human readable format.
+
+  Args:
+    size: Memory size to resolve.
+
+  Note: This function currently supports size resolution upto TB, any
+        size beyond it would return `Memory Exceeded`. To resolve this,
+        append 'PB', 'EB', 'ZB', 'YB' to the below list.
+  """
   for idx in ['bytes', 'KB', 'MB', 'GB', 'TB']:
     if size < 1024.0:
       return f'{size:,.2f} {idx}'
