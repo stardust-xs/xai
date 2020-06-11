@@ -129,6 +129,7 @@ def write_data(file: str, header: Sequence, *args) -> None:
 
 
 def resolve_size(size: Union[float, int]) -> str:
+  """Resolve memory size in human readable format. """
   for idx in ['bytes', 'KB', 'MB', 'GB', 'TB']:
     if size < 1024.0:
       return f'{size:,.2f} {idx}'
