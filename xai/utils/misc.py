@@ -133,4 +133,4 @@ def resolve_size(size: int) -> str:
     if size < 1024.0:
       return f'{size:,.2f} {idx}'
     size /= 1024.0
-  return None
+  return 'Memory Exceeded'
