@@ -128,7 +128,7 @@ def write_data(file: str, header: Sequence, *args) -> None:
         csv_obj.writerow([*args])
 
 
-def resolve_size(size: int) -> str:
+def resolve_size(size: Union[float, int]) -> str:
   for idx in ['bytes', 'KB', 'MB', 'GB', 'TB']:
     if size < 1024.0:
       return f'{size:,.2f} {idx}'
