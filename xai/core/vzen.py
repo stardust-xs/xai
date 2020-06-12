@@ -225,10 +225,9 @@ class GodsEye(object):
             fps_stats = f'{elapsed} : {fps:>02} FPS'
 
           fps_stats = f'{self._version}\n{fps_stats}'
+          smart_text_box(frm, 5, 5, 0, 0, fps_stats)
 
           detect_faces(frm)
-
-          smart_text_box(frm, 5, 5, 0, 0, fps_stats)
 
           cv2.imshow(self._service, frm)
           self._frm_num += self._refresh
