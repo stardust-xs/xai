@@ -218,7 +218,7 @@ class GodsEye(object):
                            interpolation=cv2.INTER_AREA)
 
           res = (f'RAM : {resolve_size(psutil.virtual_memory().used)} '
-                 f'CPU : {psutil.Process(self._pid).cpu_percent(interval=0)}%')
+                 f'CPU : {psutil.cpu_percent(interval=0)}%')
           smart_text_box(frm, 5, frm.shape[0] - 30, 0, 0, res)
 
           # Records the time the session has started. This lets X.AI to
