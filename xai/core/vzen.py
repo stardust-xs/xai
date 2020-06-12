@@ -34,7 +34,7 @@ from xai.utils.misc import now, resolve_size, seconds_to_datetime, toast
 
 log = SilenceOfTheLog(__file__).log()
 
-face_detector = MTCNN(min_face_size=31)
+face_detector = MTCNN(min_face_size=20)
 
 
 def smart_text_box(frm: np.ndarray,
