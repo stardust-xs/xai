@@ -19,16 +19,18 @@
 Core VZen.
 """
 
+import os
 import time
 from typing import Sequence, Union
 
 import cv2
 import numpy as np
+import psutil
 from mtcnn import MTCNN
 
 from xai import __version__
 from xai.utils.logger import SilenceOfTheLog
-from xai.utils.misc import now, seconds_to_datetime, toast
+from xai.utils.misc import now, resolve_size, seconds_to_datetime, toast
 
 log = SilenceOfTheLog(__file__).log()
 
@@ -184,6 +186,8 @@ class GodsEye(object):
     self._refresh = 1.0
     self._exception = 30.0
 
+    self._pid = os.getpid()
+
   def perceive_everything(self) -> None:
     """Perceive everything."""
     # Keep the service running irrespective of encountered exceptions.
@@ -212,6 +216,9 @@ class GodsEye(object):
 
           frm = cv2.resize(frm, None, fx=self._scl, fy=self._scl,
                            interpolation=cv2.INTER_AREA)
+
+          ram = f'RAM : {resolve_size(psutil.virtual_memory().used)}'
+          smart_text_box(frm, 5, frm.shape[0] - 30, 0, 0, ram)
 
           # Records the time the session has started. This lets X.AI to
           # calculate the FPS at which the camera(s) are recording.
