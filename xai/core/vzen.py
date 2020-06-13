@@ -26,11 +26,17 @@ from typing import Sequence, Union
 import cv2
 import numpy as np
 import psutil
-from mtcnn import MTCNN
 
 from xai import __version__
 from xai.utils.logger import SilenceOfTheLog
 from xai.utils.misc import now, resolve_size, seconds_to_datetime, toast
+
+try:
+  os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+  from mtcnn import MTCNN
+except ImportError:
+  raise
+
 
 log = SilenceOfTheLog(__file__).log()
 
