@@ -116,6 +116,7 @@ def smart_text_box(frm: np.ndarray,
 
 
 def detect_faces(frm: np.ndarray,
+                 msk: np.ndarray,
                  cnf: float = 0.87,
                  fcr: Sequence = (255, 255, 255),
                  tcr: Sequence = (255, 255, 255),
@@ -144,7 +145,6 @@ def detect_faces(frm: np.ndarray,
   faces = face_detector.detect_faces(rgb)
 
   cnt = 1
-  msk = frm.copy()
 
   for face in faces:
     # Considering detections which have confidence score higher than the
@@ -223,6 +223,7 @@ class GodsEye(object):
 
           frm = cv2.resize(frm, None, fx=self._scl, fy=self._scl,
                            interpolation=cv2.INTER_AREA)
+          msk = frm.copy()
 
           # Records the time the session has started. This lets X.AI to
           # calculate the FPS at which the camera(s) are recording.
@@ -240,7 +241,7 @@ class GodsEye(object):
                  f'CPU : {psutil.cpu_percent(interval=0)}%')
           smart_text_box(frm, 5, frm.shape[0] - 30, 0, 0, res)
 
-          detect_faces(frm)
+          detect_faces(frm, msk)
 
           cv2.imshow(self._version, frm)
           self._frm_num += self._refresh
