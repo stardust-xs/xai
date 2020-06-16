@@ -243,7 +243,7 @@ class GodsEye(object):
 
           detect_faces(frm)
 
-          cv2.imshow(self._service, frm)
+          cv2.imshow(self._version, frm)
           self._frm_num += self._refresh
         else:
           self._log.warning('VZen service broke while streaming.')
