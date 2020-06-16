@@ -226,17 +226,19 @@ class GodsEye(object):
 
           # Records the time the session has started. This lets X.AI to
           # calculate the FPS at which the camera(s) are recording.
-          elapsed = seconds_to_datetime((now() - started).seconds)
-          fps_stats = f'{elapsed}'
+          elp = seconds_to_datetime((now() - started).seconds)
+          fps_stats = f'ELP : {elp}'
 
           # Calculate the FPS of the perceived vision. The FPS is
           # calculated after the perceived vision is activated
           if self._frm_num > self._bfr:
             fps = round(self._frm_num / (now() - started).seconds)
-            fps_stats = f'{elapsed} : {fps:>02} FPS'
+            fps_stats = f'ELP : {elp}  SPD : {fps:>02} FPS'
 
-          fps_stats = f'{self._version}\n{fps_stats}'
-          smart_text_box(frm, 5, 5, 0, 0, fps_stats)
+          res = (f'{fps_stats}  '
+                 f'RAM : {resolve_size(psutil.virtual_memory().used)}  '
+                 f'CPU : {psutil.cpu_percent(interval=0)}%')
+          smart_text_box(frm, 5, frm.shape[0] - 30, 0, 0, res)
 
           detect_faces(frm)
 
