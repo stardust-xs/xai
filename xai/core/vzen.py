@@ -224,10 +224,6 @@ class GodsEye(object):
           frm = cv2.resize(frm, None, fx=self._scl, fy=self._scl,
                            interpolation=cv2.INTER_AREA)
 
-          res = (f'RAM : {resolve_size(psutil.virtual_memory().used)} '
-                 f'CPU : {psutil.cpu_percent(interval=0)}%')
-          smart_text_box(frm, 5, frm.shape[0] - 30, 0, 0, res)
-
           # Records the time the session has started. This lets X.AI to
           # calculate the FPS at which the camera(s) are recording.
           elapsed = seconds_to_datetime((now() - started).seconds)
