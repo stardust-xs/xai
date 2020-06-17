@@ -176,6 +176,17 @@ def detect_faces(frm: np.ndarray,
       cnt += 1
 
 
+def barn_door(frm: np.ndarray,
+              msk: np.ndarray,
+              bcr: Sequence = (0, 0, 0),
+              alp: float = 0.5,
+              thk: int = 1,
+              fnt: Union[int, str] = cv2.FONT_HERSHEY_SIMPLEX,
+              lnt: Union[int, str] = cv2.LINE_AA) -> None:
+  """Docstring to be updated."""
+  pass
+
+
 class GodsEye(object):
   """Docstring to be updated."""
 
@@ -242,6 +253,7 @@ class GodsEye(object):
           smart_text_box(frm, 5, frm.shape[0] - 30, 0, 0, res)
 
           detect_faces(frm, msk)
+          # barn_door(frm, msk)
 
           cv2.imshow(self._version, frm)
           self._frm_num += self._refresh
