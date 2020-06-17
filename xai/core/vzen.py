@@ -184,8 +184,8 @@ def barn_door(frm: np.ndarray,
               fnt: Union[int, str] = cv2.FONT_HERSHEY_SIMPLEX,
               lnt: Union[int, str] = cv2.LINE_AA) -> None:
   """Docstring to be updated."""
+  cty, ctx = tuple(map(round, (tuple(map(lambda x: x / 2, frm.shape[:2])))))
   pass
-
 
 class GodsEye(object):
   """Docstring to be updated."""
