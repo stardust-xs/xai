@@ -176,17 +176,6 @@ def detect_faces(frm: np.ndarray,
       cnt += 1
 
 
-def barn_door(frm: np.ndarray,
-              msk: np.ndarray,
-              bcr: Sequence = (0, 0, 0),
-              alp: float = 0.5,
-              thk: int = 1,
-              fnt: Union[int, str] = cv2.FONT_HERSHEY_SIMPLEX,
-              lnt: Union[int, str] = cv2.LINE_AA) -> None:
-  """Docstring to be updated."""
-  cty, ctx = tuple(map(round, (tuple(map(lambda x: x / 2, frm.shape[:2])))))
-  pass
-
 class GodsEye(object):
   """Docstring to be updated."""
 
