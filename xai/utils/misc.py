@@ -139,6 +139,7 @@ def resolve_size(size: Union[float, int]) -> str:
         size beyond it would return `Memory Exceeded`. To resolve this,
         append 'PB', 'EB', 'ZB', 'YB' to the below list.
   """
+  # Use 1000 for simple precision
   for idx in ['bytes', 'KB', 'MB', 'GB', 'TB']:
     if size < 1024.0:
       return f'{size:,.2f} {idx}'
