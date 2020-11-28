@@ -20,6 +20,8 @@
 # You can read more about it here: https://semver.org/spec/v2.0.0.html
 __version__ = '3.0.4'
 
+# STOPPING RELEASE AS PART OF NEW PROJECT - Kaamiki
+
 # Version history
 
 # 3.0.4 - Jun 13, 2020
