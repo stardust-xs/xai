@@ -39,7 +39,8 @@ try:
   from win32process import GetWindowThreadProcessId
   from win32api import GetFileVersionInfo
 except ImportError:
-  raise
+  print('ImportError: Win32 not installed. Please run `pip install pywin32`')
+  exit(0)
 
 log = SilenceOfTheLog(__file__)
 
